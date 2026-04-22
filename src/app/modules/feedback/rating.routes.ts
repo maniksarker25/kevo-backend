@@ -1,26 +1,26 @@
 import express from 'express';
 import auth from '../../middlewares/auth';
-import { USER_ROLE } from '../user/user.constant';
 import validateRequest from '../../middlewares/validateRequest';
+import { USER_ROLE } from '../user/user.constant';
 import feedbackValidations from './feedback.validation';
-import feedbackController from './feedback.controller';
+import RatingController from './rating.controller';
 
 const router = express.Router();
 
 router.post(
-    '/create-feedback',
+    '/create',
     auth(USER_ROLE.customer),
     validateRequest(feedbackValidations.createFeedbackZodSchema),
-    feedbackController.createFeedback
+    RatingController.createRating
 );
 router.get(
-    '/my-feedback',
+    '/my-ratings',
     auth(USER_ROLE.provider),
-    feedbackController.getMyFeedBack
+    RatingController.getMyRatings
 );
 router.get(
-    '/task-feedback',
+    '/task-ratings',
     auth(USER_ROLE.provider, USER_ROLE.customer),
-    feedbackController.getFeedBackByTask
+    RatingController.getRatingsByTask
 );
-export const feedbackRoutes = router;
+export const ratingRoutes = router;
