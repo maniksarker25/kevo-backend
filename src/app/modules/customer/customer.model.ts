@@ -48,6 +48,10 @@ const customerSchema = new Schema<ICustomer>(
             type: String,
             unique: true,
         },
+        dateOfBirth: {
+            type: Date,
+            default: null,
+        },
     },
     {
         timestamps: true,

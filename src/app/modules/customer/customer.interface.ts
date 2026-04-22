@@ -11,4 +11,5 @@ export interface ICustomer {
     street?: string;
     address?: string;
     referralCode?: string;
+    dateOfBirth?: Date;
 }

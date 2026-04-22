@@ -10,12 +10,7 @@ const updateUserProfile = catchAsync(async (req, res) => {
     if (req.files?.profile_image) {
         req.body.profile_image = getCloudFrontUrl(file[0].key);
     }
-    const address_document_file: any = req.files?.address_document;
-    if (req.files?.address_document) {
-        req.body.address_document = getCloudFrontUrl(
-            address_document_file[0].key
-        );
-    }
+
     const result = await CustomerServices.updateUserProfile(req.user, req.body);
     sendResponse(res, {
         statusCode: httpStatus.OK,

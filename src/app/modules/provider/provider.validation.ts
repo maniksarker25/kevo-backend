@@ -10,7 +10,6 @@ export const updateProviderZodSchema = z.object({
         profile_image: z.string().optional(),
         city: z.string().optional(),
         street: z.string().optional(),
-        address_document: z.string().optional(),
         identificationDocumentType: z.string().optional(),
         identificationDocumentNumber: z.string().optional(),
         identification_document: z.string().optional(),

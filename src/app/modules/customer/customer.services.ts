@@ -32,9 +32,6 @@ const updateUserProfile = async (userData: JwtPayload, payload: any) => {
         if (payload.profile_image && user.profile_image) {
             deleteFileFromS3(user.profile_image);
         }
-        if (payload.address_document && user.address_document) {
-            deleteFileFromS3(user.address_document);
-        }
         return result;
     } else if (userData.role == USER_ROLE.superAdmin) {
         const admin = await SuperAdmin.findById(userData.profileId);
@@ -64,9 +61,7 @@ const updateUserProfile = async (userData: JwtPayload, payload: any) => {
         if (payload.profile_image && provider.profile_image) {
             deleteFileFromS3(provider.profile_image);
         }
-        if (payload.address_document && provider.address_document) {
-            deleteFileFromS3(provider.address_document);
-        }
+
         return result;
     }
 };
@@ -118,7 +113,15 @@ const getAllCustomerFromDB = async (query: Record<string, unknown>) => {
                 localField: 'user',
                 foreignField: '_id',
                 as: 'user',
-                pipeline: [{ $project: { isBlocked: 1, isAdminVerified: 1 } }],
+                pipeline: [
+                    {
+                        $project: {
+                            isBlocked: 1,
+                            isAdminVerified: 1,
+                            isActive: 1,
+                        },
+                    },
+                ],
             },
         },
         {
@@ -147,7 +150,8 @@ const getAllCustomerFromDB = async (query: Record<string, unknown>) => {
                             status: {
                                 $in: [
                                     ENUM_TASK_STATUS.IN_PROGRESS,
-                                    ENUM_TASK_STATUS.OPEN_FOR_BID,
+                                    ENUM_TASK_STATUS.OPEN,
+                                    ENUM_TASK_STATUS.ASSIGNED,
                                 ],
                             },
                         },
@@ -157,12 +161,10 @@ const getAllCustomerFromDB = async (query: Record<string, unknown>) => {
         },
         {
             $addFields: {
-                totalTaskCount: { $size: '$activeTasks' },
+                activeTasks: { $size: '$activeTasks' },
             },
         },
-        {
-            $project: { activeTasks: 0 },
-        },
+
         {
             $facet: {
                 result: [{ $skip: skip }, { $limit: limit }],
@@ -188,7 +190,7 @@ const getAllCustomerFromDB = async (query: Record<string, unknown>) => {
 const getSingleCustomer = async (id: string) => {
     const result = await Customer.findById(id).populate({
         path: 'user',
-        select: 'isBlocked isAdminVerified',
+        select: 'isBlocked isAdminVerified isActive',
     });
     return result;
 };

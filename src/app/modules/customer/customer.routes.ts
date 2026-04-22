@@ -22,7 +22,7 @@ router.patch(
     CustomerController.updateUserProfile
 );
 router.get(
-    '/all-customer',
+    '/get-all',
     auth(USER_ROLE.admin, USER_ROLE.superAdmin),
     CustomerController.getAllCustomer
 );
