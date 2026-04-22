@@ -6,117 +6,128 @@ export const registrationSuccessEmail = (
     <head>
       <style>
         body {
-          font-family: 'Helvetica', 'Arial', sans-serif;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
           margin: 0;
           padding: 0;
-          background-color: #f7f9fc;
+          background-color: #f0f4f8;
         }
         .container {
           max-width: 600px;
-          margin: 0 auto;
-          padding: 40px 20px;
+          margin: 20px auto;
           background-color: #ffffff;
-          border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 10px 25px rgba(43, 127, 255, 0.1);
         }
         .header {
-          background-color: #007bff;
-          padding: 20px;
-          border-top-left-radius: 8px;
-          border-top-right-radius: 8px;
+          background-color: #2B7FFF;
+          padding: 40px 20px;
           color: #ffffff;
           text-align: center;
         }
         .header h1 {
           margin: 0;
-          font-size: 24px;
-          font-weight: 600;
+          font-size: 28px;
+          font-weight: 700;
+          letter-spacing: -0.5px;
         }
         .content {
-          padding: 30px;
-          color: #333333;
+          padding: 40px;
+          color: #2d3748;
         }
         .content h2 {
           font-size: 22px;
-          color: #333333;
-          margin-bottom: 20px;
+          color: #1a202c;
+          margin-bottom: 15px;
           font-weight: 600;
         }
         .content p {
           font-size: 16px;
-          color: #666666;
-          line-height: 1.6;
-          margin-bottom: 20px;
+          color: #4a5568;
+          line-height: 1.7;
+          margin-bottom: 25px;
+        }
+        .activation-card {
+          background-color: #f8faff;
+          border: 2px dashed #2B7FFF;
+          border-radius: 8px;
+          padding: 20px;
+          text-align: center;
+          margin: 30px 0;
         }
         .activation-code {
-          font-size: 28px;
-          color: #007bff;
-          font-weight: 700;
-          text-align: center;
-          margin-bottom: 20px;
+          font-size: 36px;
+          color: #2B7FFF;
+          font-weight: 800;
+          letter-spacing: 5px;
+          margin: 0;
         }
         .button-container {
           text-align: center;
-          margin: 40px 0;
+          margin: 30px 0;
         }
         .button {
-          padding: 12px 30px;
-          background-color: #007bff;
-          color: #ffffff;
+          padding: 14px 40px;
+          background-color: #2B7FFF;
+          color: #ffffff !important;
           text-decoration: none;
-          border-radius: 6px;
+          border-radius: 50px;
           font-size: 16px;
           font-weight: 600;
-        }
-        .button-text {
-          color: #fff;
-        }
-        .button:hover {
-          background-color: #0056b3;
+          display: inline-block;
+          transition: background-color 0.3s ease;
         }
         .footer {
-          padding: 20px;
-          font-size: 14px;
-          color: #999999;
+          padding: 30px;
+          font-size: 13px;
+          color: #a0aec0;
           text-align: center;
-          background-color: #f7f9fc;
-          border-bottom-left-radius: 8px;
-          border-bottom-right-radius: 8px;
-        }
-        .footer p {
-          margin: 5px 0;
+          background-color: #fdfdfd;
+          border-top: 1px solid #edf2f7;
         }
         .footer a {
-          color: #007bff;
+          color: #2B7FFF;
           text-decoration: none;
         }
-        .footer a:hover {
-          text-decoration: underline;
+        .warning {
+          font-size: 13px;
+          color: #e53e3e;
+          font-style: italic;
         }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
-          <h1>Welcome to Cigarslounges</h1>
+          <h1>SnowOut</h1>
         </div>
         <div class="content">
-          <h2>Hello, ${name}</h2>
+          <h2>Welcome to the SnowOut, ${name}!</h2>
 
-          <p>Thank you for registering with Cigarslounges . To activate your account, please use the following activation code:</p>
+          <p>We're excited to have you on board. To get started with <strong>SnowOut</strong>, please verify your account using the activation code below:</p>
+          
+          <div class="activation-card">
             <div class="activation-code">${activationCode || 'XXXXXX'}</div>
-            <p>Enter this code on the activation page within the next 10 minutes. If you don't your account will be deleted from the database and you will need to register again.</p>
-            <div class="button-container">
-              <a href="https://yourwebsite.com/activate" class="button">
-                <span class="activate-btn">Activate Now</span>
-              </a>
-            </div>
-            <p>If you didn't register, ignore this email.</p>
-          <p>If you have any questions, feel free to contact us at <a href="info@cigarslounges.com">info@cigarslounges.com</a>.</p>
+          </div>
+
+          <div class="button-container">
+            <a href="https://snowout-app.com/activate" class="button">
+              Verify Account
+            </a>
+          </div>
+
+          <p class="warning">
+            Note: This code expires in 10 minutes. For security, unverified accounts are automatically cleared from our system after this window.
+          </p>
+          
+          <p>If you have any trouble, reach out to our team at <a href="mailto:support@snowout-app.com">support@snowout-app.com</a>.</p>
         </div>
         <div class="footer">
-          <p>&copy; ${new Date().getFullYear()} Template. All rights reserved.</p>
-          <p><a href="https://yourwebsite.com/privacy">Privacy Policy</a> | <a href="https://yourwebsite.com/contact">Contact Us</a></p>
+          <p>&copy; ${new Date().getFullYear()} SnowOut. All rights reserved.</p>
+          <p>
+            <a href="https://snowout-app.com/privacy">Privacy Policy</a> | 
+            <a href="https://snowout-app.com/contact">Support</a>
+          </p>
         </div>
       </div>
     </body>

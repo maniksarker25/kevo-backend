@@ -10,7 +10,5 @@ export interface ICustomer {
     city?: string;
     street?: string;
     address?: string;
-    address_document?: string;
-    isAddressProvided?: boolean;
     referralCode?: string;
 }

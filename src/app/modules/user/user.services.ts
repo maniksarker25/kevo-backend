@@ -192,9 +192,6 @@ const verifyCode = async (email: string, verifyCode: number) => {
         const provider = await Provider.findById(user.profileId);
         obj.isIdentificationDocumentVerified =
             provider?.isIdentificationDocumentApproved;
-    } else {
-        const customer = await Customer.findById(user.profileId);
-        obj.isAddressProvided = customer?.isAddressProvided;
     }
 
     return {
@@ -234,18 +231,24 @@ const getMyProfile = async (userData: JwtPayload) => {
     if (userData.role === USER_ROLE.customer) {
         result = await Customer.findOne({ email: userData.email }).populate({
             path: 'user',
-            select: 'isMultiRole',
+            select: 'isBlocked isActive isAdminVerified',
         });
     }
     if (userData.role === USER_ROLE.provider) {
         result = await Provider.findOne({ email: userData.email }).populate({
             path: 'user',
-            select: 'isMultiRole',
+            select: 'isBlocked isActive isAdminVerified',
         });
     } else if (userData.role === USER_ROLE.superAdmin) {
-        result = await SuperAdmin.findOne({ email: userData.email });
+        result = await SuperAdmin.findOne({ email: userData.email }).populate({
+            path: 'user',
+            select: 'isBlocked isActive ',
+        });
     } else if (userData.role === USER_ROLE.admin) {
-        result = await Admin.findOne({ email: userData.email });
+        result = await Admin.findOne({ email: userData.email }).populate({
+            path: 'user',
+            select: 'isBlocked isActive ',
+        });
     }
     return result;
 };
@@ -293,9 +296,7 @@ const updateUserProfile = async (userData: JwtPayload, payload: any) => {
         if (payload.profile_image && user.profile_image) {
             deleteFileFromS3(user.profile_image);
         }
-        if (payload.address_document && user.address_document) {
-            deleteFileFromS3(user.address_document);
-        }
+
         return result;
     } else if (userData.role == USER_ROLE.superAdmin) {
         const admin = await SuperAdmin.findById(userData.profileId);
@@ -488,7 +489,6 @@ const upgradeAccount = async (userData: JwtPayload) => {
                     accessToken,
                     refreshToken,
                     role: USER_ROLE.customer,
-                    isAddressProvided: customer.isAddressProvided,
                 },
                 message: 'Your account switched to customer',
             };
@@ -509,9 +509,7 @@ const upgradeAccount = async (userData: JwtPayload) => {
                 phone: customer?.phone,
                 city: customer?.city,
                 street: customer?.street,
-                address_document: customer?.address_document,
                 address: customer?.address,
-                isAddressProvided: customer?.isAddressProvided,
             };
 
             const result = await Provider.create(providerData);

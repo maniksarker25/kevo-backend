@@ -12,7 +12,7 @@ const registerUser = catchAsync(async (req, res) => {
         statusCode: httpStatus.OK,
         success: true,
         message:
-            'User registration successful.Check email for verify your email',
+            'User registration successful. Check email for verify your account',
         data: result,
     });
 });
@@ -76,7 +76,7 @@ const changeUserStatus = catchAsync(async (req, res) => {
         statusCode: httpStatus.OK,
         success: true,
         message: `${
-            result?.role == USER_ROLE.customer ? 'Tasker' : 'Freelancer'
+            result?.role == USER_ROLE.customer ? 'Customer' : 'Provider'
         } is ${result?.isBlocked ? 'Blocked' : 'Unblocked'}`,
         data: result,
     });
