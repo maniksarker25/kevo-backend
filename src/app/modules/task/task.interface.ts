@@ -20,7 +20,6 @@ export interface ITask {
     paymentStatus: (typeof ENUM_PAYMENT_STATUS)[keyof typeof ENUM_PAYMENT_STATUS];
     provider?: Types.ObjectId | null;
     customer: Types.ObjectId;
-    payOn: string;
     location: {
         type: 'Point';
         coordinates: [number, number];

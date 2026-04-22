@@ -1,10 +1,7 @@
 import { model, Schema } from 'mongoose';
 import { ENUM_PAYMENT_STATUS } from '../../utilities/enum';
-import {
-    ENUM_DONE_BY,
-    ENUM_SCHEDULE_TYPE,
-    ENUM_TASK_STATUS,
-} from './task.enum';
+import { ENUM_SERVICE_TYPE } from '../provider/provider.enum';
+import { ENUM_TASK_STATUS } from './task.enum';
 import { IStatusWithDate, ITask } from './task.interface';
 
 const statusWithDateSchema = new Schema<IStatusWithDate>({
@@ -22,18 +19,14 @@ const statusWithDateSchema = new Schema<IStatusWithDate>({
 const taskSchema = new Schema<ITask>(
     {
         title: { type: String, required: true },
-        category: {
-            type: Schema.Types.ObjectId,
-            ref: 'Category',
+        serviceType: {
+            type: String,
+            enum: Object.values(ENUM_SERVICE_TYPE),
             required: true,
-        },
-        service: {
-            type: Schema.Types.ObjectId,
-            ref: 'Service',
-            default: null,
         },
 
         budget: { type: Number, required: true },
+        taskStartDateTime: { type: Date, default: null },
         acceptedBidAmount: { type: Number, default: null },
         customerPayingAmount: { type: Number, default: null },
         providerEarningAmount: { type: Number, default: null },
@@ -42,9 +35,7 @@ const taskSchema = new Schema<ITask>(
             enum: Object.values(ENUM_TASK_STATUS),
             default: ENUM_TASK_STATUS.OPEN_FOR_BID,
         },
-
         isDeleted: { type: Boolean, default: false },
-
         paymentStatus: {
             type: String,
             enum: Object.values(ENUM_PAYMENT_STATUS),
@@ -59,13 +50,6 @@ const taskSchema = new Schema<ITask>(
         customer: {
             type: Schema.Types.ObjectId,
             ref: 'Customer',
-        },
-
-        payOn: { type: String },
-        doneBy: {
-            type: String,
-            enum: Object.values(ENUM_DONE_BY),
-            required: true,
         },
 
         location: {
@@ -89,10 +73,6 @@ const taskSchema = new Schema<ITask>(
             type: String,
             default: '',
         },
-        scheduleType: {
-            type: String,
-            enum: Object.values(ENUM_SCHEDULE_TYPE),
-        },
         preferredDeliveryDateTime: { type: Date, default: null },
         description: { type: String, required: true },
         task_attachments: [{ type: String }],
@@ -100,7 +80,6 @@ const taskSchema = new Schema<ITask>(
             type: [statusWithDateSchema],
         },
         transactionId: { type: String, default: null },
-        paymentReferenceId: { type: String, default: null },
     },
 
     { timestamps: true }
