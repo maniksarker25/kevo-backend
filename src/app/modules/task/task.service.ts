@@ -58,46 +58,6 @@ const createTaskIntoDB = async (
             'category'
         );
 
-        const admins = await User.find({ role: USER_ROLE.admin }).select(
-            '_id profileId'
-        );
-
-        if (admins.length > 0) {
-            const title = 'New Task Created';
-            const message = `A new task "${payload.title}" has been created`;
-
-            await Notification.create({
-                title,
-                message,
-                receiver: USER_ROLE.admin,
-                type: ENUM_NOTIFICATION_TYPE.TASK_CREATED,
-                redirectLink: `${createdTask?._id}`,
-            });
-
-            const adminUserIds = admins.map((admin) => admin._id.toString());
-            await sendBatchPushNotification(adminUserIds, title, message, {
-                taskId: result?._id.toString(),
-                type: ENUM_NOTIFICATION_TYPE.TASK_CREATED,
-            });
-        }
-
-        if (payload.provider) {
-            console.log('Payload provider:', payload.provider);
-            await Notification.create({
-                title: 'New Offer Alert!',
-                message: `Hey! A fresh offer just landed in your service. Check it out!`,
-                receiver: payload.provider,
-                type: ENUM_NOTIFICATION_TYPE.TASK_OFFERED,
-                redirectLink: `${createdTask?._id}`,
-            });
-            sendSinglePushNotification(
-                payload.provider.toString(),
-                'New Offer Alert!',
-                `Hey! A fresh offer just landed in your service. Check it out!"`,
-                { taskId: createdTask._id.toString() }
-            );
-        }
-
         return result;
     } catch (err) {
         console.error('Failed to send task create admin notification:', err);
@@ -160,7 +120,7 @@ const getAllTaskFromDB = async (
             page = 1,
             limit = 10,
             status,
-            category,
+            serviceType,
             provider,
             customer,
             paymentStatus,
@@ -184,9 +144,7 @@ const getAllTaskFromDB = async (
         if (scheduleType) matchStage.scheduleType = scheduleType;
         if (doneBy) matchStage.doneBy = doneBy;
 
-        if (category)
-            matchStage.category = new mongoose.Types.ObjectId(category);
-
+        if (serviceType) matchStage.serviceType = serviceType;
         if (provider)
             matchStage.provider = new mongoose.Types.ObjectId(provider);
 
@@ -479,26 +437,6 @@ const getAllTaskFromDB = async (
                                 profile_image: 1,
                             },
                         },
-                        // {
-                        //     // Populate the user reference
-                        //     $lookup: {
-                        //         from: 'users',
-                        //         localField: 'user',
-                        //         foreignField: '_id',
-                        //         as: 'user',
-                        //         pipeline: [
-                        //             {
-                        //                 $project: {
-                        //                     _id: 1,
-                        //                     email: 1,
-                        //                     phone: 1,
-                        //                     role: 1,
-
-                        //                 },
-                        //             },
-                        //         ],
-                        //     },
-                        // },
                         {
                             $unwind: {
                                 path: '$user',
@@ -938,7 +876,6 @@ const rejectOfferByProvider = async (taskId: string, currentUserId: string) => {
     }
 
     task.provider = null;
-    task.service = null;
     task.status = ENUM_TASK_STATUS.OPEN_FOR_BID;
     await task.save();
     await Notification.create({
