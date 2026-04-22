@@ -5,15 +5,14 @@ import httpStatus from 'http-status';
 import { JwtPayload } from 'jsonwebtoken';
 import config from '../../config';
 import AppError from '../../error/appError';
+import { resetPasswordEmailBody } from '../../mailTemplate/resetPasswordEmailBody';
+import sendEmail from '../../utilities/sendEmail';
+import { Provider } from '../provider/provider.model';
+import { USER_ROLE } from '../user/user.constant';
 import { TUserRole } from '../user/user.interface';
 import { User } from '../user/user.model';
 import { createToken, verifyToken } from '../user/user.utils';
 import { TLoginUser } from './auth.interface';
-// const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-// const GOOGLE_CLIENT_IDS = (process.env.GOOGLE_CLIENT_IDS || '').split(',');
-import { Customer } from '../customer/customer.model';
-import { Provider } from '../provider/provider.model';
-import { USER_ROLE } from '../user/user.constant';
 const generateVerifyCode = (): number => {
     return Math.floor(100000 + Math.random() * 900000);
 };
@@ -51,30 +50,9 @@ const loginUserIntoDB = async (payload: TLoginUser) => {
             `${payload.role} account not found`
         );
     }
-    // checking if the password is correct ----
     if (!(await User.isPasswordMatched(payload?.password, user?.password))) {
         throw new AppError(httpStatus.FORBIDDEN, 'Password do not match');
     }
-
-    if (payload.playerId) {
-        const currentPlayerIds = user.playerIds || [];
-
-        // If already exists, remove it first (to avoid duplicates)
-        const filtered = currentPlayerIds.filter(
-            (id) => id !== payload.playerId
-        );
-
-        // Add the new one to the end
-        filtered.push(payload.playerId);
-
-        // If length > 3, remove from beginning
-        if (filtered.length > 3) {
-            filtered.shift();
-        }
-
-        await User.findByIdAndUpdate(user._id, { playerIds: filtered });
-    }
-
     const jwtPayload = {
         id: user?._id,
         profileId: user.profileId,
@@ -95,13 +73,8 @@ const loginUserIntoDB = async (payload: TLoginUser) => {
     const obj: any = {};
     if (user.role == USER_ROLE.provider) {
         const provider = await Provider.findById(user.profileId);
-        obj.isBankNumberVerified = provider?.isBankVerificationNumberApproved;
         obj.isIdentificationDocumentVerified =
             provider?.isIdentificationDocumentApproved;
-        obj.isAddressProvided = provider?.isAddressProvided;
-    } else {
-        const customer = await Customer.findById(user.profileId);
-        obj.isAddressProvided = customer?.isAddressProvided;
     }
 
     return {
@@ -227,11 +200,11 @@ const forgetPassword = async (phone: string) => {
             codeExpireIn: new Date(Date.now() + 5 * 60000),
         }
     );
-    //TODO: send reset code to user phone number via sms after testing
-    // await sendSMS(
-    //     user.phone,
-    //     `Task Alley: Your password reset code is ${resetCode}. This code will expire in 5 minutes. If you didn’t request a password reset, please ignore this message.`
-    // );
+    sendEmail({
+        email: user.email,
+        subject: 'Reset password code',
+        html: resetPasswordEmailBody('Dear', resetCode),
+    });
 
     return null;
 };
@@ -356,11 +329,11 @@ const resendResetCode = async (phone: string) => {
             codeExpireIn: new Date(Date.now() + 5 * 60000),
         }
     );
-    //TODO: send reset code to user phone number via sms after testing
-    // sendSMS(
-    //     user.phone,
-    //     `Task Alley: Your password reset code is ${resetCode}. This code will expire in 5 minutes. If you didn’t request a password reset, please ignore this message.`
-    // );
+    sendEmail({
+        email: user.email,
+        subject: 'Reset password code',
+        html: resetPasswordEmailBody('Dear', resetCode),
+    });
 
     return null;
 };
