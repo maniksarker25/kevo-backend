@@ -12,7 +12,17 @@ import sendContactUsEmail from './app/helper/sendContactUsEmail';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import notFound from './app/middlewares/notFound';
 import router from './app/routes';
+import handleConnectedAccountWebhook from './app/stripeManager/connectedAccountWebhook';
+import handleWebhook from './app/stripeManager/webhook';
 const app: Application = express();
+
+// web hook
+app.post('/webhook', express.raw({ type: 'application/json' }), handleWebhook);
+app.post(
+    '/connected-account/webhook',
+    express.raw({ type: 'application/json' }),
+    handleConnectedAccountWebhook
+);
 // parser----------------
 app.use(express.json());
 app.use(cookieParser());
@@ -43,20 +53,6 @@ app.post('/contact-us', sendContactUsEmail);
 app.get('/', async (req, res) => {
     res.send({ message: 'nice to meet you 2' });
 });
-
-function getSmileTimestamp() {
-    const date = new Date();
-
-    const yyyy = date.getUTCFullYear();
-    const MM = String(date.getUTCMonth() + 1).padStart(2, '0');
-    const dd = String(date.getUTCDate()).padStart(2, '0');
-    const HH = String(date.getUTCHours()).padStart(2, '0');
-    const mm = String(date.getUTCMinutes()).padStart(2, '0');
-    const ss = String(date.getUTCSeconds()).padStart(2, '0');
-    const fff = String(date.getUTCMilliseconds()).padStart(3, '0');
-
-    return `${yyyy}-${MM}-${dd}T${HH}:${mm}:${ss}.${fff}+0000`;
-}
 
 export function generateSignature(
     partnerId: string,

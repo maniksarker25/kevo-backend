@@ -13,7 +13,6 @@ export const ENUM_PAYMENT_STATUS = {
 
 export const ENUM_PAYMENT_PURPOSE = {
     BID_ACCEPT: 'BID_ACCEPT',
-    SUCCESS: 'Success',
 };
 
 export const ENUM_TIP_BY = {
