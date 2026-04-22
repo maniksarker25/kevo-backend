@@ -1,18 +1,14 @@
 import { model, Schema } from 'mongoose';
-import { IFeedback } from './feedback.interface';
+import { IRating } from './rating.interface';
 
-const feedbackSchema = new Schema<IFeedback>(
+const ratingSchema = new Schema<IRating>(
     {
         task: {
             type: Schema.Types.ObjectId,
             ref: 'Task',
             required: true,
         },
-        service: {
-            type: Schema.Types.ObjectId,
-            ref: 'Service',
-            default: null,
-        },
+
         provider: {
             type: Schema.Types.ObjectId,
             ref: 'Provider',
@@ -35,5 +31,5 @@ const feedbackSchema = new Schema<IFeedback>(
     { timestamps: true }
 );
 
-const FeedbackModel = model<IFeedback>('Feedback', feedbackSchema);
-export default FeedbackModel;
+const Rating = model<IRating>('Rating', ratingSchema);
+export default Rating;

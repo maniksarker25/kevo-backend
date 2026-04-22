@@ -1,14 +1,14 @@
 import httpStatus from 'http-status';
 import AppError from '../../error/appError';
-import { IFeedback } from './feedback.interface';
 
 import { ENUM_TASK_STATUS } from '../task/task.enum';
 import TaskModel from '../task/task.model';
-import FeedbackModel from './feedback.model';
+import { IRating } from './rating.interface';
+import Rating from './rating.model';
 
-const createFeedbackIntoDB = async (
+const createRatingIntoDB = async (
     currentUserID: string,
-    payload: Partial<IFeedback>
+    payload: Partial<IRating>
 ) => {
     const task = await TaskModel.findOne({
         _id: payload.task,
@@ -19,48 +19,48 @@ const createFeedbackIntoDB = async (
         throw new AppError(httpStatus.NOT_FOUND, 'Task not found');
     }
 
-    const existingFeedback = await FeedbackModel.findOne({
+    const existingRating = await Rating.findOne({
         task: payload.task,
         customer: currentUserID,
+        provider: task.provider,
     });
-    if (existingFeedback) {
+    if (existingRating) {
         throw new AppError(
             httpStatus.BAD_REQUEST,
-            'Feedback already submitted for this task'
+            'Rating already submitted for this task'
         );
     }
 
-    const result = await FeedbackModel.create({
+    const result = await Rating.create({
         ...payload,
         customer: currentUserID,
         provider: task.provider,
-        service: task.service,
     });
 
     return result;
 };
-const getMyFeedBackFromDB = async (currentUserID: string) => {
-    const feedBack = await FeedbackModel.find({
+const getMyRatingsFromDB = async (currentUserID: string) => {
+    const rating = await Rating.find({
         provider: currentUserID,
     }).populate({ path: 'customer', select: 'name profile_image' });
 
-    return feedBack;
+    return rating;
 };
 
-const getFeedBackByTaskFromDB = async (taskId: string) => {
+const getRatingsByTaskFromDB = async (taskId: string) => {
     const task = await TaskModel.findById(taskId);
     if (!task) {
         throw new AppError(httpStatus.NOT_FOUND, 'Task not found');
     }
 
-    const feedBack = await FeedbackModel.find({
+    const rating = await Rating.find({
         task: task._id,
     });
-    return feedBack;
+    return rating;
 };
-const FeedbackServices = {
-    createFeedbackIntoDB,
-    getMyFeedBackFromDB,
-    getFeedBackByTaskFromDB,
+const RatingServices = {
+    createRatingIntoDB,
+    getMyRatingsFromDB,
+    getRatingsByTaskFromDB,
 };
-export default FeedbackServices;
+export default RatingServices;
