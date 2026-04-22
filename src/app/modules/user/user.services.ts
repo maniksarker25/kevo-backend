@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-unused-vars */
 
+import bcrypt from 'bcrypt';
 import httpStatus from 'http-status';
 import { JwtPayload } from 'jsonwebtoken';
 import mongoose from 'mongoose';
@@ -9,7 +10,7 @@ import cron from 'node-cron';
 import config from '../../config';
 import AppError from '../../error/appError';
 import { deleteFileFromS3 } from '../../helper/deleteFromS3';
-import registrationSuccessEmailBody from '../../mailTemplate/registrationSuccessEmailBody';
+import { registrationSuccessEmail } from '../../mailTemplate/registerSucessEmail';
 import sendEmail from '../../utilities/sendEmail';
 import Admin from '../admin/admin.model';
 import { ICustomer } from '../customer/customer.interface';
@@ -17,10 +18,9 @@ import { Customer } from '../customer/customer.model';
 import { Provider } from '../provider/provider.model';
 import SuperAdmin from '../superAdmin/superAdmin.model';
 import { USER_ROLE } from './user.constant';
-import { TUser, TUserRole } from './user.interface';
+import { TUserRole } from './user.interface';
 import { User } from './user.model';
 import { createToken } from './user.utils';
-
 const generateVerifyCode = (): number => {
     return Math.floor(100000 + Math.random() * 900000);
 };
@@ -42,10 +42,9 @@ const registerUser = async (
         );
     }
 
-    const emailExist = await User.findOne({ email: userData.email });
-    if (emailExist) {
-        throw new AppError(httpStatus.BAD_REQUEST, 'This email already exists');
-    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const existingUser = await User.findOne({ email: userData.email });
 
     const session = await mongoose.startSession();
     session.startTransaction();
@@ -53,24 +52,58 @@ const registerUser = async (
     try {
         const verifyCode = generateVerifyCode();
 
-        const userDataPayload: Partial<TUser> = {
-            email: userData?.email,
-            phone: userData?.phone,
-            password,
-            role,
-            roles: [role],
-            verifyCode,
-            codeExpireIn: new Date(Date.now() + 5 * 60000), 
-        };
+        let user: any;
+        let profile: any;
 
-        if (playerId) {
-            userDataPayload.playerIds = [playerId];
+        if (existingUser && existingUser.isVerified) {
+            throw new AppError(
+                httpStatus.BAD_REQUEST,
+                'This email already exists and is verified'
+            );
         }
 
-        // Create user
-        const [user] = await User.create([userDataPayload], { session });
+        if (existingUser && !existingUser.isVerified) {
+            user = await User.findByIdAndUpdate(
+                existingUser._id,
+                {
+                    password: hashedPassword,
+                    role,
+                    roles: [role],
+                    verifyCode,
+                    codeExpireIn: new Date(Date.now() + 5 * 60000),
+                    ...(playerId && { playerIds: [playerId] }),
+                },
+                { new: true, session }
+            );
 
-        let profile;
+            if (existingUser.profileId) {
+                if (existingUser.role === 'customer') {
+                    await Customer.deleteOne({
+                        _id: existingUser.profileId,
+                    }).session(session);
+                } else {
+                    await Provider.deleteOne({
+                        _id: existingUser.profileId,
+                    }).session(session);
+                }
+            }
+        }
+
+        if (!existingUser) {
+            const userPayload = {
+                email: userData.email,
+                phone: userData.phone,
+                password: hashedPassword,
+                role,
+                roles: [role],
+                verifyCode,
+                codeExpireIn: new Date(Date.now() + 5 * 60000),
+                ...(playerId && { playerIds: [playerId] }),
+            };
+
+            [user] = await User.create([userPayload], { session });
+        }
+
         if (role === 'customer') {
             const customerPayload = {
                 ...userData,
@@ -91,10 +124,15 @@ const registerUser = async (
             { session }
         );
 
-        const smsMessage = `Thank you for registering with Task Alley. Your verification code is ${verifyCode}. It expires in 5 minutes. Please verify in time to complete registration.`;
-        // await sendSMS(userData.phone, smsMessage);
+        sendEmail({
+            email: userData.email,
+            subject: 'Activate Your Account',
+            html: registrationSuccessEmail(
+                profile.name,
+                parseInt(user.verifyCode.toString())
+            ),
+        });
 
-        // If SMS sent successfully, commit transaction
         await session.commitTransaction();
         session.endSession();
 
@@ -114,8 +152,7 @@ const verifyCode = async (email: string, verifyCode: number) => {
     if (user.codeExpireIn < new Date(Date.now())) {
         throw new AppError(httpStatus.BAD_REQUEST, 'Verify code is expired');
     }
-    //TODO: remove 111111 after testing
-    if (verifyCode !== user.verifyCode && verifyCode !== 111111) {
+    if (verifyCode !== user.verifyCode) {
         throw new AppError(httpStatus.BAD_REQUEST, "Code doesn't match");
     }
     const result = await User.findOneAndUpdate(
@@ -153,20 +190,12 @@ const verifyCode = async (email: string, verifyCode: number) => {
     const obj: any = {};
     if (user.role == USER_ROLE.provider) {
         const provider = await Provider.findById(user.profileId);
-        obj.isBankNumberVerified = provider?.isBankVerificationNumberApproved;
         obj.isIdentificationDocumentVerified =
             provider?.isIdentificationDocumentApproved;
-        obj.isAddressProvided = provider?.isAddressProvided;
     } else {
         const customer = await Customer.findById(user.profileId);
         obj.isAddressProvided = customer?.isAddressProvided;
     }
-    const name = user.role == USER_ROLE.provider ? 'Freelancer' : 'Tasker';
-    sendEmail({
-        email: user.email,
-        subject: 'Welcome to Task Alley!',
-        html: registrationSuccessEmailBody(name),
-    });
 
     return {
         accessToken,
@@ -196,9 +225,7 @@ const resendVerifyCode = async (email: string) => {
             'Something went wrong . Please again resend the code after a few second'
         );
     }
-    const smsMessage = `Thank you for registering with Task Alley. Your verification code is ${verifyCode}. It expires in 5 minutes. Please verify in time to complete registration.`;
-    //TODO: need to enable sendSMS after testing
-    // await sendSMS(user.phone, smsMessage);
+
     return null;
 };
 
@@ -317,9 +344,7 @@ const updateUserProfile = async (userData: JwtPayload, payload: any) => {
         if (payload.profile_image && provider.profile_image) {
             deleteFileFromS3(provider.profile_image);
         }
-        if (payload.address_document && provider.address_document) {
-            deleteFileFromS3(provider.address_document);
-        }
+
         return result;
     }
 };
@@ -429,11 +454,8 @@ const upgradeAccount = async (userData: JwtPayload) => {
                     accessToken,
                     refreshToken,
                     role: USER_ROLE.provider,
-                    isAddressProvided: provider.isAddressProvided,
                     isIdentificationDocumentVerified:
                         provider.isIdentificationDocumentApproved,
-                    isBankNumberVerified:
-                        provider.isBankVerificationNumberApproved,
                 },
                 message: 'Your account switched to provider',
             };
@@ -541,9 +563,7 @@ const upgradeAccount = async (userData: JwtPayload) => {
                 phone: provider?.phone,
                 city: provider?.city,
                 street: provider?.street,
-                address_document: provider?.address_document,
                 address: provider?.address,
-                isAddressProvided: provider?.isAddressProvided,
             };
 
             const result = await Customer.create(customerData);
@@ -593,7 +613,7 @@ const upgradeAccount = async (userData: JwtPayload) => {
 };
 
 const userServices = {
-     registerUser,
+    registerUser,
     verifyCode,
     resendVerifyCode,
     getMyProfile,

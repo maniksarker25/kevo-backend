@@ -1,4 +1,5 @@
 import { model, Schema } from 'mongoose';
+import { ENUM_BID_STATUS } from './bid.enum';
 import { IBid } from './bid.interface';
 
 const bidSchema = new Schema<IBid>(
@@ -20,6 +21,11 @@ const bidSchema = new Schema<IBid>(
         customerProposedAmount: {
             type: Number,
             default: null,
+        },
+        status: {
+            type: String,
+            enum: Object.values(ENUM_BID_STATUS),
+            default: ENUM_BID_STATUS.PENDING,
         },
     },
     { timestamps: true }

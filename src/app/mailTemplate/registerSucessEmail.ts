@@ -1,4 +1,7 @@
-const registrationSuccessEmail = (name: string, activationCode: number) => `
+export const registrationSuccessEmail = (
+    name: string,
+    activationCode: number
+) => `
   <html>
     <head>
       <style>

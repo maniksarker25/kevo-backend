@@ -9,7 +9,7 @@ export interface IStatusWithDate {
 }
 
 export interface ITask {
-    title: string;
+    title?: string;
     serviceType: (typeof ENUM_SERVICE_TYPE)[keyof typeof ENUM_SERVICE_TYPE];
     budget: number;
     taskStartDateTime: Date | null;

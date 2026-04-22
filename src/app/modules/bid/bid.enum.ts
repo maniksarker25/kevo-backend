@@ -1,0 +1,5 @@
+export const ENUM_BID_STATUS = {
+    PENDING: 'PENDING',
+    ACCEPTED: 'ACCEPTED',
+    REJECTED: 'REJECTED',
+};

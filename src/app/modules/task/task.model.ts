@@ -18,7 +18,7 @@ const statusWithDateSchema = new Schema<IStatusWithDate>({
 
 const taskSchema = new Schema<ITask>(
     {
-        title: { type: String, required: true },
+        title: { type: String, required: false, default: '' },
         serviceType: {
             type: String,
             enum: Object.values(ENUM_SERVICE_TYPE),
