@@ -1,5 +1,6 @@
 import { Types } from 'mongoose';
 import { ENUM_IDENTIFICATION_DOCUMENT } from '../customer/customer.enum';
+import { ENUM_SERVICE_TYPE } from './provider.enum';
 
 export interface IProvider {
     user: Types.ObjectId; // ref -> Users
@@ -9,17 +10,15 @@ export interface IProvider {
     profile_image?: string;
     city?: string;
     street?: string;
-    address_document?: string;
     identificationDocumentType?: (typeof ENUM_IDENTIFICATION_DOCUMENT)[keyof typeof ENUM_IDENTIFICATION_DOCUMENT];
     identificationDocumentNumber?: string;
     identification_document?: string;
-    bankVerificationNumber?: string;
     isVerified?: boolean;
     isIdentificationDocumentApproved?: boolean;
-    isBankVerificationNumberApproved?: boolean;
-    isAddressProvided?: boolean;
-    bankName?: string;
-    bankAccountNumber?: string;
     referralCode?: string;
     address?: string;
+    serviceTypes?: (typeof ENUM_SERVICE_TYPE)[keyof typeof ENUM_SERVICE_TYPE][];
+    dateOfBirth?: Date;
+    stripeAccountId?: string;
+    isStripeConnected?: boolean;
 }
