@@ -12,6 +12,7 @@ import { notificationRoutes } from '../modules/notification/notification.routes'
 import { oauthRoutes } from '../modules/oAuth/oAuth.routes';
 import { paymentRoutes } from '../modules/payment/payment.routes';
 import { providerRoutes } from '../modules/provider/provider.routes';
+import { ratingRoutes } from '../modules/rating/rating.routes';
 import { referralRoutes } from '../modules/referral/referral.routes';
 import { referralUseRoutes } from '../modules/referralUse/referralUse.routes';
 import { superAdminRoutes } from '../modules/superAdmin/superAdmin.routes';
@@ -102,6 +103,10 @@ const moduleRoutes = [
     {
         path: '/oauth',
         router: oauthRoutes,
+    },
+    {
+        path: '/rating',
+        router: ratingRoutes,
     },
 ];
 

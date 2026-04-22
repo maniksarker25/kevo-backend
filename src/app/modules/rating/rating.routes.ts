@@ -2,7 +2,7 @@ import express from 'express';
 import auth from '../../middlewares/auth';
 import validateRequest from '../../middlewares/validateRequest';
 import { USER_ROLE } from '../user/user.constant';
-import feedbackValidations from './feedback.validation';
+import feedbackValidations from './rating.validation';
 import RatingController from './rating.controller';
 
 const router = express.Router();
