@@ -71,7 +71,6 @@ const registerUser = async (
                     roles: [role],
                     verifyCode,
                     codeExpireIn: new Date(Date.now() + 5 * 60000),
-                    ...(playerId && { playerIds: [playerId] }),
                 },
                 { new: true, session }
             );
