@@ -13,13 +13,13 @@ const bidSchema = new Schema<IBid>(
             ref: 'Task',
             required: true,
         },
-        price: {
+        providerProposedAmount: {
             type: Number,
-            required: true,
+            default: null,
         },
-        details: {
-            type: String,
-            required: true,
+        customerProposedAmount: {
+            type: Number,
+            default: null,
         },
     },
     { timestamps: true }

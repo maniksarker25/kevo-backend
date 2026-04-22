@@ -48,6 +48,9 @@ const createTaskIntoDB = async (
             'Your account is not verified by admin yet'
         );
     }
+    if (payload.provider) {
+        payload.status = ENUM_TASK_STATUS.PRIVATE;
+    }
     try {
         const createdTask = await TaskModel.create({
             ...payload,
