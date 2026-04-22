@@ -1,17 +1,11 @@
 /* eslint-disable no-unused-vars */
 export enum ENUM_TASK_STATUS {
-    OPEN_FOR_BID = 'OPEN_FOR_BID',
+    PRIVATE = 'PRIVATE',
+    OPEN = 'OPEN',
+    ASSIGNED = 'ASSIGNED',
     IN_PROGRESS = 'IN_PROGRESS',
-    COMPLETED = 'COMPLETED',
     CANCELLED = 'CANCELLED',
-    DISPUTE = 'DISPUTED',
-    LATE = 'LATE',
-    OFFERED = 'OFFERED',
-}
-
-export enum ENUM_DONE_BY {
-    IN_PERSON = 'IN_PERSON',
-    ONLINE = 'ONLINE',
+    COMPLETED = 'COMPLETED',
 }
 
 export enum ENUM_SCHEDULE_TYPE {

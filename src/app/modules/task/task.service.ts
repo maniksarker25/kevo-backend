@@ -540,7 +540,7 @@ const getMyTaskFromDB = async (
         matchStage.customer = new mongoose.Types.ObjectId(userData.profileId);
     }
     if (
-        query.status != ENUM_TASK_STATUS.OPEN_FOR_BID &&
+        query.status != ENUM_TASK_STATUS.OPEN &&
         query.status != 'bidMade' &&
         userData.role == USER_ROLE.provider
     ) {
@@ -583,7 +583,7 @@ const getMyTaskFromDB = async (
         }
 
         if (query.status === 'bidReceived') {
-            filters.status = ENUM_TASK_STATUS.OPEN_FOR_BID;
+            filters.status = ENUM_TASK_STATUS.OPEN;
         }
     }
 
@@ -876,7 +876,7 @@ const rejectOfferByProvider = async (taskId: string, currentUserId: string) => {
     }
 
     task.provider = null;
-    task.status = ENUM_TASK_STATUS.OPEN_FOR_BID;
+    task.status = ENUM_TASK_STATUS.OPEN;
     await task.save();
     await Notification.create({
         title: 'Offer rejected by Provider',

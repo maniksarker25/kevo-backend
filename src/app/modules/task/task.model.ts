@@ -33,7 +33,7 @@ const taskSchema = new Schema<ITask>(
         status: {
             type: String,
             enum: Object.values(ENUM_TASK_STATUS),
-            default: ENUM_TASK_STATUS.OPEN_FOR_BID,
+            default: ENUM_TASK_STATUS.OPEN,
         },
         isDeleted: { type: Boolean, default: false },
         paymentStatus: {
