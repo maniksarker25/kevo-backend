@@ -37,7 +37,7 @@ const createBidIntoDB = async (userData: JwtPayload, payload: IBid) => {
         throw new AppError(httpStatus.NOT_FOUND, 'Task not found');
     }
 
-    if (task.status !== ENUM_TASK_STATUS.OPEN_FOR_BID) {
+    if (task.status !== ENUM_TASK_STATUS.OPEN) {
         throw new AppError(
             httpStatus.BAD_REQUEST,
             'Bidding is closed for this task'
@@ -67,11 +67,6 @@ const createBidIntoDB = async (userData: JwtPayload, payload: IBid) => {
         `A new bid has been placed for the task "${task.title}"`,
         { taskId: task._id.toString() }
     );
-    return result;
-};
-
-const getAllBidFromDB = async () => {
-    const result = await BidModel.find({});
     return result;
 };
 
@@ -217,7 +212,6 @@ const updateBidIntoDB = async (
 };
 const BidServices = {
     createBidIntoDB,
-    getAllBidFromDB,
     deleteBidFromDB,
     getBidsByTaskIDFromDB,
     updateBidIntoDB,

@@ -15,7 +15,6 @@ router.post(
     BidController.createBid
 );
 
-router.get('/all-bid', BidController.getAllBid);
 router.get('/bids-by-task-id/:id', BidController.getBidsByTask);
 router.delete(
     '/delete-bid/:id',

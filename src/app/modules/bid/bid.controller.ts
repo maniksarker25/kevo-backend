@@ -13,15 +13,6 @@ const createBid = catchAsync(async (req, res) => {
     });
 });
 
-const getAllBid = catchAsync(async (req, res) => {
-    const result = await BidServices.getAllBidFromDB();
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: 'Bids fetched successfully',
-        data: result,
-    });
-});
 const getBidsByTask = catchAsync(async (req, res) => {
     const result = await BidServices.getBidsByTaskIDFromDB(
         req.params.id,
@@ -63,7 +54,6 @@ const updateBid = catchAsync(async (req, res) => {
 
 const BidController = {
     createBid,
-    getAllBid,
     deleteBid,
     getBidsByTask,
     updateBid,
