@@ -37,21 +37,12 @@ const createTaskIntoDB = async (
     if (payload.provider) {
         payload.status = ENUM_TASK_STATUS.PRIVATE;
     }
-    try {
-        const createdTask = await TaskModel.create({
-            ...payload,
-            customer: profileId,
-        });
+    const result = await TaskModel.create({
+        ...payload,
+        customer: profileId,
+    });
 
-        const result = await TaskModel.findById(createdTask._id).populate(
-            'category'
-        );
-
-        return result;
-    } catch (err) {
-        console.error('Failed to send task create admin notification:', err);
-        throw err;
-    }
+    return result;
 };
 
 const updateTask = async (profileId: string, id: string, payload: ITask) => {

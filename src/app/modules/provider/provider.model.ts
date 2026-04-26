@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Schema, model } from 'mongoose';
-import { ENUM_SERVICE_TYPE } from './provider.enum';
 import { IProvider } from './provider.interface';
 
 const providerSchema = new Schema<IProvider>(
@@ -62,10 +61,6 @@ const providerSchema = new Schema<IProvider>(
         address: {
             type: String,
             default: '',
-        },
-        serviceTypes: {
-            type: [String],
-            enum: Object.values(ENUM_SERVICE_TYPE),
         },
         dateOfBirth: {
             type: Date,
