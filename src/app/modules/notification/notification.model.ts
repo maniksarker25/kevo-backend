@@ -1,45 +1,68 @@
-import { model, Schema } from 'mongoose';
-import { INotification } from './notification.interface';
-import { ENUM_NOTIFICATION_TYPE } from './notification.enum';
+import mongoose, { Schema } from 'mongoose';
+import { NOTIFICATION_ACTION, NOTIFICATION_ENTITY } from './notification.enum';
 
-const notificationSchema = new Schema<INotification>(
+const notificationSchema = new Schema(
     {
+        receiver: {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+            required: true,
+            index: true,
+        },
+
+        type: {
+            type: String,
+            required: true,
+            index: true,
+        },
+
         title: {
             type: String,
             required: true,
         },
+
         message: {
             type: String,
             required: true,
         },
-        receiver: {
-            type: String,
-            required: true,
+
+        data: {
+            entity: { type: String, enum: Object.values(NOTIFICATION_ENTITY) },
+            action: { type: String, enum: Object.values(NOTIFICATION_ACTION) },
+            entityId: { type: Schema.Types.ObjectId },
+            meta: {
+                type: Schema.Types.Mixed,
+            },
         },
-        deleteBy: {
-            type: [String],
-            default: [],
+
+        isRead: {
+            type: Boolean,
+            default: false,
+            index: true,
         },
-        seenBy: {
-            type: [String],
-            default: [],
+
+        readAt: {
+            type: Date,
         },
-        redirectLink: {
-            type: String, // e.g. /task/123 or /provider/profile
-            default: '',
+
+        isSeen: {
+            type: Boolean,
+            default: false,
         },
-        type: {
-            type: String,
-            enum: Object.values(ENUM_NOTIFICATION_TYPE),
-            default: ENUM_NOTIFICATION_TYPE.GENERAL,
+
+        seenAt: {
+            type: Date,
         },
     },
-    //-------------------------
     {
         timestamps: true,
     }
 );
 
-const Notification = model<INotification>('Notification', notificationSchema);
+notificationSchema.index({ receiver: 1, isRead: 1 });
+notificationSchema.index({ receiver: 1, createdAt: -1 });
 
-export default Notification;
+//  auto delete after 30 days
+notificationSchema.index({ createdAt: 1 }, { expireAfterSeconds: 2592000 });
+
+export default mongoose.model('Notification', notificationSchema);
