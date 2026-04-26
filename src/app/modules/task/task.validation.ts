@@ -101,13 +101,6 @@ const createTaskSchema = z.object({
             .optional()
             .default(''),
 
-        city: z
-            .string({
-                invalid_type_error: 'City must be a string',
-            })
-            .optional()
-            .default(''),
-
         description: z
             .string({
                 required_error: 'Description is required',
@@ -203,12 +196,6 @@ const updateTaskSchema = z.object({
         address: z
             .string({
                 invalid_type_error: 'Address must be a string',
-            })
-            .optional(),
-
-        city: z
-            .string({
-                invalid_type_error: 'City must be a string',
             })
             .optional(),
 

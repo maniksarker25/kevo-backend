@@ -25,8 +25,6 @@ export interface ITask {
         coordinates: [number, number];
     };
     address: string;
-    city?: string;
-    preferredDeliveryDateTime?: Date | null;
     description: string;
     task_attachments: string[];
     statusWithDate: IStatusWithDate[];
