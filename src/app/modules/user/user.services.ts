@@ -272,12 +272,6 @@ const updateUserProfile = async (
     userData: JwtPayload,
     payload: UpdateUserProfileDTO
 ) => {
-    if (payload.email || payload.phone) {
-        throw new AppError(
-            httpStatus.BAD_REQUEST,
-            'You can not change the email or phone number'
-        );
-    }
     if (userData.role == USER_ROLE.customer) {
         const user = await Customer.findById(userData.profileId);
         if (!user) {
@@ -373,7 +367,6 @@ const adminVerifyUserFromDB = async (id: string) => {
 // upgrade account
 const upgradeAccount = async (userData: JwtPayload) => {
     const user = await User.findById(userData.id);
-    console.log('user', user);
     if (!user) {
         throw new AppError(httpStatus.NOT_FOUND, 'User not found');
     }
