@@ -60,5 +60,7 @@ const reportSchema = new Schema<IReport>(
         timestamps: true,
     }
 );
+
+reportSchema.index({ reportBy: 1, reportTo: 1, task: 1 }, { unique: true });
 const ReportModel = model<IReport>('Report', reportSchema);
 export default ReportModel;

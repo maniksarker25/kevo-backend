@@ -1,74 +1,73 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Schema, model } from 'mongoose';
-import { IProvider } from './provider.interface';
+import { model, Schema } from 'mongoose';
+import { ENUM_IDENTIFICATION_DOCUMENT } from '../customer/customer.enum';
+import { ENUM_SERVICE_TYPE } from '../task/task.enum';
 
-const providerSchema = new Schema<IProvider>(
+const ProviderSchema = new Schema(
     {
         user: {
             type: Schema.Types.ObjectId,
             ref: 'User',
             required: true,
         },
+
         name: {
             type: String,
             required: true,
             trim: true,
         },
+
         phone: {
             type: String,
             required: true,
-            trim: true,
         },
+
         email: {
             type: String,
             required: true,
             lowercase: true,
             trim: true,
         },
+
         profile_image: {
             type: String,
         },
-        city: {
-            type: String,
-        },
-        street: {
-            type: String,
-        },
+
         identificationDocumentType: {
             type: String,
-            default: '',
+            enum: Object.values(ENUM_IDENTIFICATION_DOCUMENT),
         },
+
         identificationDocumentNumber: {
             type: String,
-            default: '',
         },
+
         identification_document: {
             type: String,
-            default: '',
         },
-        isVerified: {
-            type: Boolean,
-            default: false,
-        },
+
         isIdentificationDocumentApproved: {
             type: Boolean,
             default: false,
         },
-        referralCode: {
-            type: String,
-            unique: true,
-        },
+
         address: {
             type: String,
-            default: '',
         },
+
+        serviceTypes: {
+            type: [String],
+            enum: Object.values(ENUM_SERVICE_TYPE),
+            default: [],
+        },
+
         dateOfBirth: {
             type: Date,
         },
+
         stripeAccountId: {
             type: String,
-            default: '',
         },
+
         isStripeConnected: {
             type: Boolean,
             default: false,
@@ -76,32 +75,7 @@ const providerSchema = new Schema<IProvider>(
     },
     {
         timestamps: true,
-        versionKey: false,
     }
 );
 
-providerSchema.statics.generateUniqueReferralCode = async function () {
-    const generate = () =>
-        Math.random().toString(36).substring(2, 7).toUpperCase();
-
-    let code = generate();
-    let exists = await this.findOne({ referralCode: code });
-
-    while (exists) {
-        code = generate();
-        exists = await this.findOne({ referralCode: code });
-    }
-
-    return code;
-};
-
-providerSchema.pre('save', async function (next) {
-    if (!this.referralCode) {
-        this.referralCode = await (
-            this.constructor as any
-        ).generateUniqueReferralCode();
-    }
-    next();
-});
-
-export const Provider = model<IProvider>('Provider', providerSchema);
+export const Provider = model('Provider', ProviderSchema);

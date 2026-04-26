@@ -1,23 +1,20 @@
 import { Types } from 'mongoose';
 import { ENUM_IDENTIFICATION_DOCUMENT } from '../customer/customer.enum';
-import { ENUM_SERVICE_TYPE } from './provider.enum';
+import { ENUM_SERVICE_TYPE } from '../task/task.enum';
+type ServiceType = (typeof ENUM_SERVICE_TYPE)[keyof typeof ENUM_SERVICE_TYPE];
 
 export interface IProvider {
-    user: Types.ObjectId; // ref -> Users
+    user: Types.ObjectId;
     name: string;
     phone: string;
     email: string;
     profile_image?: string;
-    city?: string;
-    street?: string;
     identificationDocumentType?: (typeof ENUM_IDENTIFICATION_DOCUMENT)[keyof typeof ENUM_IDENTIFICATION_DOCUMENT];
     identificationDocumentNumber?: string;
     identification_document?: string;
-    isVerified?: boolean;
     isIdentificationDocumentApproved?: boolean;
-    referralCode?: string;
     address?: string;
-    serviceTypes?: (typeof ENUM_SERVICE_TYPE)[keyof typeof ENUM_SERVICE_TYPE][];
+    serviceTypes?: ServiceType[];
     dateOfBirth?: Date;
     stripeAccountId?: string;
     isStripeConnected?: boolean;
