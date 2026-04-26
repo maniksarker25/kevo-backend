@@ -4,7 +4,6 @@ import StripeService from './stripe.service';
 
 const createOnboardingLink = catchAsync(async (req, res) => {
     const result = await StripeService.createConnectedAccountAndOnboardingLink(
-        req.user,
         req.user.profileId
     );
 

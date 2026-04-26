@@ -1,15 +1,11 @@
 import httpStatus from 'http-status';
-import { JwtPayload } from 'jsonwebtoken';
 import Stripe from 'stripe';
 import config from '../../config';
 import AppError from '../../error/appError';
 import { Provider } from '../provider/provider.model';
 
 const stripe = new Stripe(config.stripe.stripe_secret_key as string);
-const createConnectedAccountAndOnboardingLink = async (
-    userData: JwtPayload,
-    profileId: string
-) => {
+const createConnectedAccountAndOnboardingLink = async (profileId: string) => {
     const provider = await Provider.findById(profileId);
     if (!provider) {
         throw new AppError(httpStatus.NOT_FOUND, 'User not found');
