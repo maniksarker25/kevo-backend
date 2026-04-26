@@ -9,7 +9,6 @@ import { ManageRoutes } from '../modules/manage-web/manage.routes';
 import { messageRoutes } from '../modules/message/message.routes';
 import { metaRoutes } from '../modules/meta/meta.routes';
 import { notificationRoutes } from '../modules/notification/notification.routes';
-import { oauthRoutes } from '../modules/oAuth/oAuth.routes';
 import { paymentRoutes } from '../modules/payment/payment.routes';
 import { providerRoutes } from '../modules/provider/provider.routes';
 import { ratingRoutes } from '../modules/rating/rating.routes';
@@ -99,10 +98,6 @@ const moduleRoutes = [
     {
         path: '/admin',
         router: AdminRoutes,
-    },
-    {
-        path: '/oauth',
-        router: oauthRoutes,
     },
     {
         path: '/rating',
