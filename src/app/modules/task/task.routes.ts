@@ -19,7 +19,7 @@ router.post(
         }
         next();
     },
-    validateRequest(taskValidations.createTaskZodSchema),
+    validateRequest(taskValidations.createTaskSchema),
     TaskController.createTask
 );
 router.patch(
@@ -32,7 +32,7 @@ router.patch(
         }
         next();
     },
-    validateRequest(taskValidations.updateTaskZodSchema),
+    validateRequest(taskValidations.updateTaskSchema),
     TaskController.updateTask
 );
 router.get('/all-task', simpleAuth, TaskController.getAllTask);
@@ -41,17 +41,7 @@ router.get(
     auth(USER_ROLE.customer, USER_ROLE.provider),
     TaskController.getMyTask
 );
-router.get(
-    '/single-task/:id',
-    // auth(
-    //     USER_ROLE.customer,
-    //     USER_ROLE.provider,
-    //     USER_ROLE.admin,
-    //     USER_ROLE.superAdmin
-    // ),
-    simpleAuth,
-    TaskController.getSingleTask
-);
+router.get('/single-task/:id', simpleAuth, TaskController.getSingleTask);
 router.delete(
     '/delete-task/:id',
     auth(USER_ROLE.provider, USER_ROLE.customer),

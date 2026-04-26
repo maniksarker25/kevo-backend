@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { ENUM_PAYMENT_STATUS } from '../../utilities/enum';
-import { ENUM_SERVICE_TYPE } from '../provider/provider.enum';
-import { ENUM_TASK_STATUS } from './task.enum';
+import { ENUM_SERVICE_TYPE, ENUM_TASK_STATUS } from './task.enum';
 
 const objectId = z
     .string({
