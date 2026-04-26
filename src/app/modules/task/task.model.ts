@@ -58,6 +58,18 @@ const taskSchema = new Schema<ITask>(
         },
         description: { type: String, required: true },
         task_attachments: [{ type: String }],
+        imagesAfterCompletion: {
+            type: [String],
+            default: [],
+        },
+        isMarkCompletedByProvider: {
+            type: Boolean,
+            default: false,
+        },
+        markCompletedByProviderAt: {
+            type: Date,
+            default: null,
+        },
 
         transactionId: { type: String, default: null },
     },

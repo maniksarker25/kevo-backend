@@ -508,7 +508,6 @@ const getMyTaskFromDB = async (
     }
     if (userData.role === USER_ROLE.provider) {
         if (query.status === 'bidMade') {
-            // Do NOT put inside filters!
             delete filters.status;
         }
 
@@ -575,25 +574,6 @@ const getMyTaskFromDB = async (
             },
         },
         { $unwind: { path: '$customer', preserveNullAndEmptyArrays: true } },
-        {
-            $lookup: {
-                from: 'categories',
-                localField: 'category',
-                foreignField: '_id',
-                as: 'category',
-                pipeline: [
-                    {
-                        $project: {
-                            _id: 1,
-                            name: 1,
-                        },
-                    },
-                ],
-            },
-        },
-        {
-            $unwind: { path: '$category', preserveNullAndEmptyArrays: true },
-        },
         {
             $project: {
                 bids: 0,

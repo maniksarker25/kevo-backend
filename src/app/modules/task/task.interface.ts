@@ -21,6 +21,9 @@ export interface ITask {
     address: string;
     description: string;
     task_attachments: string[];
+    imagesAfterCompletion: string[];
+    isMarkCompletedByProvider?: boolean;
+    markCompletedByProviderAt?: Date;
     transactionId?: string;
     deletedImages: string[];
     isDeleted: boolean;
