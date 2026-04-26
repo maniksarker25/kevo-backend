@@ -104,8 +104,6 @@ const getAllTaskFromDB = async (
             provider,
             customer,
             paymentStatus,
-            scheduleType,
-            doneBy,
             search,
             startDate,
             endDate,
@@ -121,9 +119,6 @@ const getAllTaskFromDB = async (
 
         if (status) matchStage.status = status;
         if (paymentStatus) matchStage.paymentStatus = paymentStatus;
-        if (scheduleType) matchStage.scheduleType = scheduleType;
-        if (doneBy) matchStage.doneBy = doneBy;
-
         if (serviceType) matchStage.serviceType = serviceType;
         if (provider)
             matchStage.provider = new mongoose.Types.ObjectId(provider);
@@ -131,7 +126,7 @@ const getAllTaskFromDB = async (
         if (customer)
             matchStage.customer = new mongoose.Types.ObjectId(customer);
 
-        /* ------------------ DATE FILTER ------------------ */
+        /*  DATE FILTER ------------------ */
 
         const { currentStart, currentEnd, previousStart, previousEnd } =
             buildDateRangesByType(query);
@@ -151,22 +146,8 @@ const getAllTaskFromDB = async (
             };
         }
 
-        /* ------------------ PIPELINE ------------------ */
-
         const pipeline: any[] = [
             { $match: matchStage },
-
-            /* ---------- LOOKUPS ---------- */
-
-            {
-                $lookup: {
-                    from: 'categories',
-                    localField: 'category',
-                    foreignField: '_id',
-                    as: 'category',
-                },
-            },
-            { $unwind: '$category' },
 
             {
                 $lookup: {
@@ -214,7 +195,6 @@ const getAllTaskFromDB = async (
 
             {
                 $facet: {
-                    /* ---------- PAGINATION ---------- */
                     meta: [
                         { $count: 'total' },
                         {
@@ -269,8 +249,6 @@ const getAllTaskFromDB = async (
             },
         ];
 
-        /* ------------------ EXECUTION ------------------ */
-
         const [data] = await TaskModel.aggregate(pipeline);
 
         const meta = data.meta[0] || {
@@ -280,8 +258,6 @@ const getAllTaskFromDB = async (
         };
 
         const totalPage = Math.ceil(meta.total / meta.limit);
-
-        /* ------------------ NORMALIZE STATS ------------------ */
 
         const stats = ALL_STATUSES.map((status: string) => {
             const current = data.currentStats.find(
@@ -315,9 +291,6 @@ const getAllTaskFromDB = async (
                           : 'no-change',
             };
         });
-
-        /* ------------------ FINAL RESPONSE ------------------ */
-
         return {
             meta: {
                 ...meta,
@@ -375,7 +348,6 @@ const getAllTaskFromDB = async (
         // Sorting
         const sortBy = query.sortBy || 'createdAt';
         const sortOrder = query.sortOrder === 'asc' ? 1 : -1;
-        // const sortStage = { [sortBy]: sortOrder };
         const sortStage = isPopular
             ? { totalOffer: -1 }
             : { [sortBy]: sortOrder };
@@ -399,7 +371,7 @@ const getAllTaskFromDB = async (
             },
             {
                 $addFields: {
-                    totalOffer: { $size: '$bids' },
+                    totalBids: { $size: '$bids' },
                 },
             },
 
@@ -433,28 +405,6 @@ const getAllTaskFromDB = async (
                 },
             },
             {
-                $lookup: {
-                    from: 'categories',
-                    localField: 'category',
-                    foreignField: '_id',
-                    as: 'category',
-                    pipeline: [
-                        {
-                            $project: {
-                                _id: 1,
-                                name: 1,
-                            },
-                        },
-                    ],
-                },
-            },
-            {
-                $unwind: {
-                    path: '$category',
-                    preserveNullAndEmptyArrays: true,
-                },
-            },
-            {
                 $project: {
                     bids: 0,
                 },
@@ -468,7 +418,7 @@ const getAllTaskFromDB = async (
             },
         ];
 
-        // 🗺️ Geo filter (if user sends coordinates)
+        //  Geo filter
         if (query.latitude && query.longitude) {
             pipeline.unshift({
                 $geoNear: {
