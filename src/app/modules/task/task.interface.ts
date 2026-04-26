@@ -3,11 +3,6 @@ import { ENUM_PAYMENT_STATUS } from '../../utilities/enum';
 import { ENUM_SERVICE_TYPE } from '../provider/provider.enum';
 import { ENUM_TASK_STATUS } from './task.enum';
 
-export interface IStatusWithDate {
-    status: (typeof ENUM_TASK_STATUS)[keyof typeof ENUM_TASK_STATUS];
-    date: Date;
-}
-
 export interface ITask {
     title?: string;
     serviceType: (typeof ENUM_SERVICE_TYPE)[keyof typeof ENUM_SERVICE_TYPE];
@@ -27,7 +22,6 @@ export interface ITask {
     address: string;
     description: string;
     task_attachments: string[];
-    statusWithDate: IStatusWithDate[];
     transactionId?: string;
     deletedImages: string[];
     isDeleted: boolean;

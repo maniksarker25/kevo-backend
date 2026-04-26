@@ -2,19 +2,7 @@ import { model, Schema } from 'mongoose';
 import { ENUM_PAYMENT_STATUS } from '../../utilities/enum';
 import { ENUM_SERVICE_TYPE } from '../provider/provider.enum';
 import { ENUM_TASK_STATUS } from './task.enum';
-import { IStatusWithDate, ITask } from './task.interface';
-
-const statusWithDateSchema = new Schema<IStatusWithDate>({
-    status: {
-        type: String,
-        enum: Object.values(ENUM_TASK_STATUS),
-        required: true,
-    },
-    date: {
-        type: Date,
-        required: true,
-    },
-});
+import { ITask } from './task.interface';
 
 const taskSchema = new Schema<ITask>(
     {
@@ -71,9 +59,7 @@ const taskSchema = new Schema<ITask>(
         },
         description: { type: String, required: true },
         task_attachments: [{ type: String }],
-        statusWithDate: {
-            type: [statusWithDateSchema],
-        },
+
         transactionId: { type: String, default: null },
     },
 

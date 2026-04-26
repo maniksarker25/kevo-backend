@@ -3,28 +3,14 @@ import httpStatus from 'http-status';
 import AppError from '../../error/appError';
 import { ITask } from './task.interface';
 
-import axios from 'axios';
 import { JwtPayload } from 'jsonwebtoken';
 import mongoose from 'mongoose';
-import config from '../../config';
-import { payStackBaseUrl, platformChargePercentage } from '../../constant';
 import { deleteFileFromS3 } from '../../helper/deleteFromS3';
-import {
-    sendBatchPushNotification,
-    sendSinglePushNotification,
-} from '../../helper/sendPushNotification';
+import { sendSinglePushNotification } from '../../helper/sendPushNotification';
 import { buildDateRangesByType } from '../../utilities/buildDateRangeByType';
-import { ENUM_PAYMENT_PURPOSE } from '../../utilities/enum';
 import { default as bidModel, default as BidModel } from '../bid/bid.model';
 import { ENUM_NOTIFICATION_TYPE } from '../notification/notification.enum';
 import Notification from '../notification/notification.model';
-import Payment from '../payment/payment.model';
-import { ENUM_DISCOUNT_TYPE } from '../promo/promo.enum';
-import PromoModel from '../promo/promo.model';
-import PromoUseModel from '../promoUse/promoUse.model';
-import QuestionModel from '../question/question.model';
-import { ENUM_REFERRAL_USE_STATUS } from '../referralUse/referralUse.enum';
-import ReferralUseModel from '../referralUse/referralUse.model';
 import { USER_ROLE } from '../user/user.constant';
 import { User } from '../user/user.model';
 import { ENUM_TASK_STATUS } from './task.enum';
@@ -828,7 +814,6 @@ const deleteTaskFromDB = async (id: string, currentUserId: string) => {
 
     await Promise.all([
         bidModel.deleteMany({ task: taskData._id }),
-        QuestionModel.deleteMany({ task: taskData._id }),
         TaskModel.findByIdAndDelete(id),
     ]);
 
@@ -897,62 +882,7 @@ const rejectOfferByProvider = async (taskId: string, currentUserId: string) => {
     return task;
 };
 
-const acceptTaskByCustomerFromDB = async (
-    profileID: string,
-    bidID: string,
-    promoCode?: string
-) => {
-    let promo;
-    if (promoCode) {
-        promo = await PromoModel.findOne({ promoCode });
-
-        if (!promo) {
-            throw new AppError(httpStatus.NOT_FOUND, 'Promo code is not valid');
-        }
-
-        const now = new Date();
-
-        if (promo.startDate > now) {
-            throw new AppError(
-                httpStatus.BAD_REQUEST,
-                'Promo is not active yet'
-            );
-        }
-
-        if (promo.endDate < now) {
-            throw new AppError(
-                httpStatus.BAD_REQUEST,
-                'Promo code has expired'
-            );
-        }
-
-        if (promo.status !== 'ACTIVE') {
-            throw new AppError(httpStatus.BAD_REQUEST, 'Promo is not active');
-        }
-        const promoUse = await PromoUseModel.countDocuments({
-            promo: promo._id,
-        });
-        const promoUseExist = await PromoUseModel.findOne({
-            customer: profileID,
-            promo: promo._id,
-        });
-        if (promoUseExist) {
-            throw new AppError(
-                httpStatus.BAD_REQUEST,
-                'You have already used this promo code'
-            );
-        }
-        if (promoUse)
-            if (promoUse >= promo.limit) {
-                throw new AppError(
-                    httpStatus.BAD_REQUEST,
-                    'Promo uses limit reached,this code is not valid now'
-                );
-            }
-    }
-    if (promoCode && !promo) {
-        throw new AppError(httpStatus.NOT_FOUND, 'Promo code is not valid');
-    }
+const acceptTaskByCustomerFromDB = async (profileID: string, bidID: string) => {
     const bidData: any = await bidModel.findById(bidID);
     if (!bidData) {
         throw new AppError(httpStatus.NOT_FOUND, 'Bid not found');
@@ -968,64 +898,13 @@ const acceptTaskByCustomerFromDB = async (
             'You are not authorized to accept this task'
         );
     }
-    let discount = 0;
 
-    if (promo) {
-        if (promo?.discountType == ENUM_DISCOUNT_TYPE.FIXED) {
-            discount = promo.discountNum;
-        } else {
-            discount = (bidData.price * promo.discountNum) / 100;
-        }
-    }
+    const finalAmount = bidData.price;
 
-    //  HANDLE REFERRAL BONUS (Includes rollback)
-    const referralUse = await ReferralUseModel.findOne({
-        $or: [{ referred: profileID }, { referrer: profileID }],
-        status: ENUM_REFERRAL_USE_STATUS.ACTIVE,
-    });
-    let finalAmount = bidData.price - discount;
-    if (referralUse) {
-        finalAmount = finalAmount - referralUse.value;
-    }
-    const amount = finalAmount * 100; // in kobo
-    // --- Initialize Pay-stack transaction ---
-    const headers = {
-        Authorization: `Bearer ${config.payStack.secretKey}`,
-        'Content-Type': 'application/json',
-    };
-    if (amount < 100) {
-        throw new AppError(
-            httpStatus.BAD_REQUEST,
-            'Amount is too low to process payment'
-        );
-    }
-    const response: any = await axios.post(
-        `${payStackBaseUrl}/transaction/initialize`,
-        {
-            email: taskData.customer.email,
-            amount,
-            // subaccount: partner.payStackSubAccountId,
-            metadata: {
-                taskId: bidData.task.toString(),
-                bidId: bidData._id.toString(),
-                customerId: profileID,
-                providerId: bidData.provider.toString(),
-                paymentPurpose: ENUM_PAYMENT_PURPOSE.BID_ACCEPT,
-                promoId: promo ? promo._id.toString() : null,
-                referralUseId: referralUse ? referralUse._id.toString() : null,
-            },
-            callback_url: `https://taskalley-deploy-5lzv.vercel.app/success`,
-        },
-        {
-            headers,
-        }
-    );
-    const data = response.data.data;
+    const amount = finalAmount * 100;
 
     return {
-        paymentLink: data.authorization_url,
-        accessCode: data.access_code,
-        reference: data.reference,
+        amount,
     };
 };
 
@@ -1037,7 +916,6 @@ const completeTaskByCustomer = async (
     session.startTransaction();
 
     try {
-        //  GET TASK & VALIDATION
         const task = await TaskModel.findById(taskId).session(session);
         if (!task) {
             throw new AppError(httpStatus.NOT_FOUND, 'Task not found');
@@ -1050,96 +928,21 @@ const completeTaskByCustomer = async (
             );
         }
 
-        //  HANDLE REFERRAL BONUS (Includes rollback)
-        const referralUse = await ReferralUseModel.findOneAndUpdate(
-            {
-                $or: [{ referred: task.provider }, { referrer: task.provider }],
-                status: ENUM_REFERRAL_USE_STATUS.ACTIVE,
-            },
-            { status: ENUM_REFERRAL_USE_STATUS.USED },
-            {
-                new: true,
-                sort: { createdAt: 1 },
-                runValidators: true,
-                session,
-            }
-        );
-
-        const platformCharge =
-            task.acceptedBidAmount * platformChargePercentage;
-        const earning = referralUse
-            ? (task.acceptedBidAmount ?? 0) + referralUse.value
-            : task.acceptedBidAmount ?? 0;
-        const providerEarning = earning - platformCharge;
-        //  UPDATE TASK STATUS + PROVIDER EARNING
         const updatedTask = await TaskModel.findByIdAndUpdate(
             taskId,
             {
                 status: ENUM_TASK_STATUS.COMPLETED,
-                providerEarningAmount: providerEarning,
-                $push: {
-                    statusWithDate: {
-                        status: ENUM_TASK_STATUS.COMPLETED,
-                        date: new Date(),
-                    },
-                },
             },
             {
                 new: true,
                 runValidators: true,
                 session,
             }
-        );
-
-        // CREATE PAYMENT
-        await Payment.create(
-            [
-                {
-                    provider: task.provider,
-                    customer: task.customer,
-                    task: task._id,
-                    amount: providerEarning,
-                    customerPayingAmount: task.customerPayingAmount,
-                    platformEarningAmount:
-                        task.customerPayingAmount! - providerEarning,
-                },
-            ],
-            { session }
-        );
-
-        // SAVE NOTIFICATION (In transaction)
-        const title = 'Task Completed';
-        const message = `Task "${task.title}" has been completed`;
-        const redirectLink = `${task._id}`;
-
-        await Notification.create(
-            [
-                {
-                    title,
-                    message,
-                    receiver: USER_ROLE.admin,
-                    type: ENUM_NOTIFICATION_TYPE.TASK_COMPLETED,
-                    redirectLink,
-                },
-            ],
-            { session }
         );
 
         // COMMIT TRANSACTION
         await session.commitTransaction();
         session.endSession();
-
-        //PUSH NOTIFICATION (OUTSIDE TRANSACTION)
-        const admins = await User.find({ role: USER_ROLE.admin }).select('_id');
-
-        if (admins.length > 0) {
-            const adminUserIds = admins.map((a) => a._id.toString());
-
-            await sendBatchPushNotification(adminUserIds, title, message, {
-                type: ENUM_NOTIFICATION_TYPE.TASK_COMPLETED,
-                taskId: task._id.toString(),
-            });
-        }
 
         return updatedTask;
     } catch (error) {

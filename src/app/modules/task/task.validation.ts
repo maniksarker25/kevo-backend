@@ -19,15 +19,6 @@ const locationSchema = z.object({
         .length(2, 'Coordinates must be [longitude, latitude]'),
 });
 
-const statusWithDateSchema = z.object({
-    status: z.nativeEnum(ENUM_TASK_STATUS, {
-        errorMap: () => ({ message: 'Invalid task status' }),
-    }),
-    date: z.coerce.date({
-        invalid_type_error: 'Invalid date format',
-    }),
-});
-
 const createTaskSchema = z.object({
     body: z.object({
         title: z
@@ -115,8 +106,6 @@ const createTaskSchema = z.object({
                 })
             )
             .optional(),
-
-        statusWithDate: z.array(statusWithDateSchema).optional(),
 
         transactionId: z
             .string({
@@ -213,8 +202,6 @@ const updateTaskSchema = z.object({
                 })
             )
             .optional(),
-
-        statusWithDate: z.array(statusWithDateSchema).optional(),
 
         transactionId: z
             .string({
