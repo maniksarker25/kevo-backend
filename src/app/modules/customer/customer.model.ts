@@ -31,14 +31,7 @@ const customerSchema = new Schema<ICustomer>(
             type: String,
             default: '',
         },
-        city: {
-            type: String,
-            default: '',
-        },
-        street: {
-            type: String,
-            default: '',
-        },
+
         address: {
             type: String,
             default: '',

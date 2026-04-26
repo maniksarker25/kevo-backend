@@ -7,8 +7,6 @@ export interface ICustomer {
     email: string;
     phone: string;
     profile_image?: string;
-    city?: string;
-    street?: string;
     address?: string;
     referralCode?: string;
     dateOfBirth?: Date;

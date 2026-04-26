@@ -18,6 +18,30 @@ export const registerUserValidationSchema = z.object({
         }),
     }),
 });
+
+import { ENUM_SERVICE_TYPE } from '../task/task.enum';
+
+export const updateUserProfileValidationSchema = z.object({
+    body: z.object({
+        name: z.string().min(1, 'Name cannot be empty').optional(),
+
+        email: z.string().email('Invalid email format').optional(),
+
+        phone: z.string().min(6, 'Phone number is too short').optional(),
+
+        profile_image: z
+            .string()
+            .url('Invalid image URL')
+            .optional()
+            .or(z.literal('')),
+
+        address: z.string().optional(),
+
+        dateOfBirth: z.coerce.date().optional().nullable(),
+
+        serviceTypes: z.array(z.nativeEnum(ENUM_SERVICE_TYPE)).optional(),
+    }),
+});
 //
 const loginValidationSchema = z.object({
     body: z.object({
@@ -92,6 +116,7 @@ const userValidations = {
     resendVerifyCodeSchema,
     changeUserStatus,
     deleteUserAccountValidationSchema,
+    updateUserProfileValidationSchema,
 };
 
 export default userValidations;

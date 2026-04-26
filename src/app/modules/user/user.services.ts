@@ -17,6 +17,7 @@ import { Customer } from '../customer/customer.model';
 import { Provider } from '../provider/provider.model';
 import SuperAdmin from '../superAdmin/superAdmin.model';
 import { USER_ROLE } from './user.constant';
+import { UpdateUserProfileDTO } from './user.dto';
 import { TUserRole } from './user.interface';
 import { User } from './user.model';
 import { createToken } from './user.utils';
@@ -267,7 +268,10 @@ const deleteUserAccount = async (user: JwtPayload, password: string) => {
 };
 
 // update user
-const updateUserProfile = async (userData: JwtPayload, payload: any) => {
+const updateUserProfile = async (
+    userData: JwtPayload,
+    payload: UpdateUserProfileDTO
+) => {
     if (payload.email || payload.phone) {
         throw new AppError(
             httpStatus.BAD_REQUEST,
@@ -278,9 +282,6 @@ const updateUserProfile = async (userData: JwtPayload, payload: any) => {
         const user = await Customer.findById(userData.profileId);
         if (!user) {
             throw new AppError(httpStatus.NOT_FOUND, 'Profile not found');
-        }
-        if (payload.city || payload.address) {
-            payload.isAddressProvided = true;
         }
         const result = await Customer.findByIdAndUpdate(
             userData.profileId,
@@ -330,10 +331,6 @@ const updateUserProfile = async (userData: JwtPayload, payload: any) => {
         if (!provider) {
             throw new AppError(httpStatus.NOT_FOUND, 'Profile not found');
         }
-        if (payload.city || payload.address) {
-            payload.isAddressProvided = true;
-        }
-
         const result = await Provider.findByIdAndUpdate(
             userData.profileId,
             payload,
@@ -463,8 +460,6 @@ const upgradeAccount = async (userData: JwtPayload) => {
                 name: customer?.name,
                 email: customer?.email,
                 phone: customer?.phone,
-                city: customer?.city,
-                street: customer?.street,
                 address: customer?.address,
             };
 
