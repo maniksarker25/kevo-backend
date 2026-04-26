@@ -6,7 +6,6 @@ import bcrypt from 'bcrypt';
 import httpStatus from 'http-status';
 import { JwtPayload } from 'jsonwebtoken';
 import mongoose from 'mongoose';
-import cron from 'node-cron';
 import config from '../../config';
 import AppError from '../../error/appError';
 import { deleteFileFromS3 } from '../../helper/deleteFromS3';
@@ -97,7 +96,6 @@ const registerUser = async (
                 roles: [role],
                 verifyCode,
                 codeExpireIn: new Date(Date.now() + 5 * 60000),
-                ...(playerId && { playerIds: [playerId] }),
             };
 
             [user] = await User.create([userPayload], { session });
@@ -348,47 +346,6 @@ const updateUserProfile = async (userData: JwtPayload, payload: any) => {
         return result;
     }
 };
-// all cron jobs for users
-
-cron.schedule('*/2 * * * *', async () => {
-    try {
-        const now = new Date();
-
-        const expiredUsers = await User.find({
-            isVerified: false,
-            codeExpireIn: { $lte: now },
-        });
-
-        if (expiredUsers.length > 0) {
-            const expiredUserIds = expiredUsers.map((user) => user._id);
-
-            // Delete corresponding Customer documents
-            const CustomerDeleteResult = await Customer.deleteMany({
-                user: { $in: expiredUserIds },
-            });
-            const ProviderDeleteResult = await Provider.deleteMany({
-                user: { $in: expiredUserIds },
-            });
-
-            // Delete the expired User documents
-            const userDeleteResult = await User.deleteMany({
-                _id: { $in: expiredUserIds },
-            });
-
-            console.log(
-                `Deleted ${userDeleteResult.deletedCount} expired inactive users`
-            );
-            console.log(
-                `Deleted ${CustomerDeleteResult.deletedCount} associated Customer documents`
-            );
-            console.log(
-                `Deleted ${ProviderDeleteResult.deletedCount} associated Customer documents`
-            );
-        }
-    } catch (error) {
-        console.log('Error deleting expired users and associated data:', error);
-    }
-});
 
 const changeUserStatus = async (id: string) => {
     const user = await User.findById(id);
@@ -558,8 +515,6 @@ const upgradeAccount = async (userData: JwtPayload) => {
                 name: provider?.name,
                 email: provider?.email,
                 phone: provider?.phone,
-                city: provider?.city,
-                street: provider?.street,
                 address: provider?.address,
             };
 
