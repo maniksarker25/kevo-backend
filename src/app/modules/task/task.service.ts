@@ -732,11 +732,26 @@ const deleteTaskFromDB = async (id: string, currentUserId: string) => {
     if (!taskData) {
         throw new AppError(httpStatus.NOT_FOUND, 'Task not found');
     }
+    if (
+        taskData?.status !== ENUM_TASK_STATUS.OPEN &&
+        taskData?.status !== ENUM_TASK_STATUS.PRIVATE
+    ) {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            'Only task with OPEN or PRIVATE status can be deleted'
+        );
+    }
 
     await Promise.all([
         bidModel.deleteMany({ task: taskData._id }),
         TaskModel.findByIdAndDelete(id),
     ]);
+
+    if (taskData.task_attachments && taskData.task_attachments.length > 0) {
+        for (const image of taskData.task_attachments) {
+            deleteFileFromS3(image);
+        }
+    }
 
     return taskData;
 };

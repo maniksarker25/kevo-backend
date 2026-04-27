@@ -6,6 +6,7 @@ import AppError from '../../error/appError';
 import { ENUM_TASK_STATUS } from '../task/task.enum';
 import TaskModel from '../task/task.model';
 import { User } from '../user/user.model';
+import { ENUM_BID_STATUS } from './bid.enum';
 import { IBid } from './bid.interface';
 import BidModel from './bid.model';
 
@@ -192,10 +193,76 @@ const updateBidIntoDB = async (
     );
     return updateBid;
 };
+
+const acceptBidByCustomerFromDB = async (bidId: string, customerId: string) => {
+    const bid: any = await BidModel.findById(bidId).populate(
+        'task',
+        '_id customer status'
+    );
+    if (!bid) {
+        throw new AppError(httpStatus.NOT_FOUND, 'Bid not found');
+    }
+    if (bid.task.customer.toString() !== customerId) {
+        throw new AppError(
+            httpStatus.FORBIDDEN,
+            'You are not authorized to accept this bid'
+        );
+    }
+
+    if (bid.task.status !== ENUM_TASK_STATUS.OPEN) {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            'Bid cannot be accepted for this task'
+        );
+    }
+    const result = await TaskModel.findByIdAndUpdate(
+        bid.task._id,
+        {
+            provider: bid.provider,
+            status: ENUM_TASK_STATUS.ASSIGNED,
+            acceptedBidAmount: bid.providerProposedAmount,
+        },
+        { new: true }
+    );
+
+    await BidModel.findByIdAndUpdate(bidId, {
+        status: ENUM_BID_STATUS.ACCEPTED,
+    });
+
+    return result;
+};
+
+const rejectBidByCustomerFromDB = async (bidId: string, customerId: string) => {
+    const bid: any = await BidModel.findById(bidId).populate(
+        'task',
+        '_id customer status'
+    );
+    if (!bid) {
+        throw new AppError(httpStatus.NOT_FOUND, 'Bid not found');
+    }
+    if (bid.task.customer.toString() !== customerId) {
+        throw new AppError(
+            httpStatus.FORBIDDEN,
+            'You are not authorized to reject this bid'
+        );
+    }
+    if (bid.task.status !== ENUM_TASK_STATUS.OPEN) {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            'Bid cannot be rejected for this task'
+        );
+    }
+    const result = await BidModel.findByIdAndUpdate(bidId, {
+        status: ENUM_BID_STATUS.REJECTED,
+    });
+    return result;
+};
 const BidServices = {
     createBidIntoDB,
     deleteBidFromDB,
     getBidsByTaskIDFromDB,
     updateBidIntoDB,
+    acceptBidByCustomerFromDB,
+    rejectBidByCustomerFromDB,
 };
 export default BidServices;
