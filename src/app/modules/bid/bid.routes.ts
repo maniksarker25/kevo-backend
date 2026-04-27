@@ -28,4 +28,7 @@ router.patch(
     BidController.updateBid
 );
 
+router.patch('/accept-bid', auth(USER_ROLE.customer), BidController.acceptBid);
+router.patch('/reject-bid', auth(USER_ROLE.customer), BidController.rejectBid);
+
 export const bidRoutes = router;

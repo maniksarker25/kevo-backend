@@ -51,11 +51,38 @@ const updateBid = catchAsync(async (req, res) => {
         data: result,
     });
 });
+const acceptBid = catchAsync(async (req, res) => {
+    const result = await BidServices.acceptBidByCustomerFromDB(
+        req.params.id,
+        req.user.profileId
+    );
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Bid accepted successfully',
+        data: result,
+    });
+});
+
+const rejectBid = catchAsync(async (req, res) => {
+    const result = await BidServices.rejectBidByCustomerFromDB(
+        req.params.id,
+        req.user.profileId
+    );
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Bid rejected successfully',
+        data: result,
+    });
+});
 
 const BidController = {
     createBid,
     deleteBid,
     getBidsByTask,
     updateBid,
+    acceptBid,
+    rejectBid,
 };
 export default BidController;
