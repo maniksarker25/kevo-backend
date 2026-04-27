@@ -148,6 +148,19 @@ const completeTask = catchAsync(async (req, res) => {
         data: result,
     });
 });
+const startTask = catchAsync(async (req, res) => {
+    const currentUserId = req.user.profileId;
+    const result = await TaskServices.startTaskByProvider(
+        req.params.id,
+        currentUserId
+    );
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Start Task Successfully',
+        data: result,
+    });
+});
 
 const TaskController = {
     createTask,
@@ -160,5 +173,6 @@ const TaskController = {
     acceptTaskByCustomer,
     updateTask,
     rejectOfferByProvider,
+    startTask,
 };
 export default TaskController;

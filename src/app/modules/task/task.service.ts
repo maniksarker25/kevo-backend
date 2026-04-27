@@ -888,6 +888,37 @@ const completeTaskByCustomer = async (
     }
 };
 
+const startTaskByProvider = async (taskId: string, currentUserId: string) => {
+    const task = await TaskModel.findById(taskId);
+
+    if (!task) {
+        throw new AppError(httpStatus.NOT_FOUND, 'Task not found');
+    }
+    if (task.provider?.toString() !== currentUserId) {
+        throw new AppError(
+            httpStatus.UNAUTHORIZED,
+            'You are not authorized to start this task'
+        );
+    }
+    if (task.status !== ENUM_TASK_STATUS.ASSIGNED) {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            'Only assigned task can be started'
+        );
+    }
+    const updatedTask = await TaskModel.findByIdAndUpdate(
+        taskId,
+        {
+            status: ENUM_TASK_STATUS.IN_PROGRESS,
+        },
+        {
+            new: true,
+            runValidators: true,
+        }
+    );
+    return updatedTask;
+};
+
 const TaskServices = {
     createTaskIntoDB,
     getAllTaskFromDB,
@@ -899,5 +930,6 @@ const TaskServices = {
     acceptTaskByCustomerFromDB,
     updateTask,
     rejectOfferByProvider,
+    startTaskByProvider,
 };
 export default TaskServices;

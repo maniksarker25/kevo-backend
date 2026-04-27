@@ -60,4 +60,10 @@ router.patch(
     TaskController.completeTask
 );
 
+router.patch(
+    '/start-task/:id',
+    auth(USER_ROLE.provider),
+    TaskController.startTask
+);
+
 export const taskRoutes = router;
