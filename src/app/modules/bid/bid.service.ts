@@ -3,6 +3,9 @@ import httpStatus from 'http-status';
 import { JwtPayload } from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import AppError from '../../error/appError';
+import { ENUM_PAYMENT_PURPOSE } from '../../utilities/enum';
+import stripe from '../../utilities/stripe';
+import { Customer } from '../customer/customer.model';
 import { ENUM_TASK_STATUS } from '../task/task.enum';
 import TaskModel from '../task/task.model';
 import { User } from '../user/user.model';
@@ -194,11 +197,20 @@ const updateBidIntoDB = async (
     return updateBid;
 };
 
-const acceptBidByCustomerFromDB = async (bidId: string, customerId: string) => {
-    const bid: any = await BidModel.findById(bidId).populate(
-        'task',
-        '_id customer status'
-    );
+const acceptBidByCustomerFromDB = async (
+    bidId: string,
+    customerId: string,
+    paymentMethodId?: string
+) => {
+    const bid: any = await BidModel.findById(bidId).populate({
+        path: 'task',
+        select: '_id customer status',
+        populate: {
+            path: 'customer',
+            select: 'name email stripeCustomerId',
+        },
+    });
+
     if (!bid) {
         throw new AppError(httpStatus.NOT_FOUND, 'Bid not found');
     }
@@ -215,21 +227,56 @@ const acceptBidByCustomerFromDB = async (bidId: string, customerId: string) => {
             'Bid cannot be accepted for this task'
         );
     }
-    const result = await TaskModel.findByIdAndUpdate(
-        bid.task._id,
-        {
-            provider: bid.provider,
-            status: ENUM_TASK_STATUS.ASSIGNED,
-            acceptedBidAmount: bid.providerProposedAmount,
-        },
-        { new: true }
-    );
 
-    await BidModel.findByIdAndUpdate(bidId, {
-        status: ENUM_BID_STATUS.ACCEPTED,
+    const amountInCents = Math.round(bid.providerProposedAmount * 100);
+    // STRIPE CUSTOMER
+    let stripeCustomerId = bid.task.customer.stripeCustomerId;
+
+    if (!stripeCustomerId) {
+        const stripeCustomer = await stripe.customers.create({
+            name: bid.task.customer.name,
+            email: bid.task.customer.email,
+        });
+
+        stripeCustomerId = stripeCustomer.id;
+
+        await Customer.findByIdAndUpdate(customerId, { stripeCustomerId });
+    }
+
+    const paymentIntent = await stripe.paymentIntents.create({
+        amount: amountInCents,
+        currency: 'usd',
+        customer: stripeCustomerId,
+
+        automatic_payment_methods: {
+            enabled: true,
+            allow_redirects: 'never',
+        },
+        // if user selected saved card
+        ...(paymentMethodId && {
+            payment_method: paymentMethodId,
+            confirm: true,
+        }),
+
+        // allow saving card for future
+        ...(!paymentMethodId && {
+            setup_future_usage: 'off_session',
+        }),
+
+        metadata: {
+            taskId: bid.task._id.toString(),
+            bidId: bid._id.toString(),
+            paymentPurpose: ENUM_PAYMENT_PURPOSE.BID_ACCEPT,
+        },
     });
 
-    return result;
+    return {
+        clientSecret: paymentIntent.client_secret,
+        stripeCustomerId,
+        taskId: bid.task._id,
+        bidId: bid._id,
+        paymentIntentId: paymentIntent.id,
+    };
 };
 
 const rejectBidByCustomerFromDB = async (bidId: string, customerId: string) => {

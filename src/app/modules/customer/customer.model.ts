@@ -45,6 +45,10 @@ const customerSchema = new Schema<ICustomer>(
             type: Date,
             default: null,
         },
+        stripeCustomerId: {
+            type: String,
+            default: null,
+        },
     },
     {
         timestamps: true,

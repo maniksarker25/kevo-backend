@@ -10,4 +10,5 @@ export interface ICustomer {
     address?: string;
     referralCode?: string;
     dateOfBirth?: Date;
+    stripeCustomerId?: string;
 }
