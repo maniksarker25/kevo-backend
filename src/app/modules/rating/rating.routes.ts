@@ -2,8 +2,8 @@ import express from 'express';
 import auth from '../../middlewares/auth';
 import validateRequest from '../../middlewares/validateRequest';
 import { USER_ROLE } from '../user/user.constant';
-import feedbackValidations from './rating.validation';
 import RatingController from './rating.controller';
+import feedbackValidations from './rating.validation';
 
 const router = express.Router();
 
@@ -19,8 +19,9 @@ router.get(
     RatingController.getMyRatings
 );
 router.get(
-    '/task-ratings',
+    '/task-ratings/:id',
     auth(USER_ROLE.provider, USER_ROLE.customer),
     RatingController.getRatingsByTask
 );
+router.get('/provider-ratings/:id', RatingController.getProviderRatings);
 export const ratingRoutes = router;

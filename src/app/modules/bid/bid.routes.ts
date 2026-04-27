@@ -15,7 +15,7 @@ router.post(
     BidController.createBid
 );
 
-router.get('/bids-by-task-id/:id', BidController.getBidsByTask);
+router.get('/task-bids/:id', BidController.getBidsByTask);
 router.delete(
     '/delete-bid/:id',
     auth(USER_ROLE.provider),
@@ -23,7 +23,7 @@ router.delete(
 );
 router.patch(
     '/update-bid/:id',
-    auth(USER_ROLE.provider),
+    auth(USER_ROLE.provider, USER_ROLE.customer),
     validateRequest(BidValidations.updateBidZodSchema),
     BidController.updateBid
 );

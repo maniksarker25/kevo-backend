@@ -13,12 +13,17 @@ const createRatingIntoDB = async (
     const task = await TaskModel.findOne({
         _id: payload.task,
         customer: currentUserID,
-        status: ENUM_TASK_STATUS.COMPLETED,
     });
     if (!task) {
         throw new AppError(httpStatus.NOT_FOUND, 'Task not found');
     }
 
+    if (task.status !== ENUM_TASK_STATUS.COMPLETED) {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            'You can only rate after the task is completed'
+        );
+    }
     const existingRating = await Rating.findOne({
         task: payload.task,
         customer: currentUserID,
@@ -58,9 +63,17 @@ const getRatingsByTaskFromDB = async (taskId: string) => {
     });
     return rating;
 };
+
+const getProviderRatingsFromDB = async (providerId: string) => {
+    const ratings = await Rating.find({
+        provider: providerId,
+    }).populate({ path: 'customer', select: 'name profile_image' });
+    return ratings;
+};
 const RatingServices = {
     createRatingIntoDB,
     getMyRatingsFromDB,
     getRatingsByTaskFromDB,
+    getProviderRatingsFromDB,
 };
 export default RatingServices;

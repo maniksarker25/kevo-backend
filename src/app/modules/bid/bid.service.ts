@@ -3,9 +3,6 @@ import httpStatus from 'http-status';
 import { JwtPayload } from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import AppError from '../../error/appError';
-import { sendSinglePushNotification } from '../../helper/sendPushNotification';
-import { ENUM_NOTIFICATION_TYPE } from '../notification/notification.enum';
-import Notification from '../notification/notification.model';
 import { ENUM_TASK_STATUS } from '../task/task.enum';
 import TaskModel from '../task/task.model';
 import { User } from '../user/user.model';
@@ -23,15 +20,19 @@ const createBidIntoDB = async (userData: JwtPayload, payload: IBid) => {
             'Your account is not verified by admin yet'
         );
     }
-    const userId = userData.profileId;
-    const task: any = await TaskModel.findById(payload.task).populate({
-        path: 'customer',
-        select: 'name email phone user',
-        populate: {
-            path: 'user',
-            select: '_id',
-        },
+
+    const isExits = await BidModel.findOne({
+        provider: userData.profileId,
+        task: payload.task,
     });
+    if (isExits) {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            'You have already placed a bid for this task'
+        );
+    }
+    const userId = userData.profileId;
+    const task: any = await TaskModel.findById(payload.task).select('status');
 
     if (!task) {
         throw new AppError(httpStatus.NOT_FOUND, 'Task not found');
@@ -43,30 +44,8 @@ const createBidIntoDB = async (userData: JwtPayload, payload: IBid) => {
             'Bidding is closed for this task'
         );
     }
-    if (task.customer.user._id.toString() === userData.id) {
-        throw new AppError(
-            httpStatus.BAD_REQUEST,
-            'You cannot place bid on your own task'
-        );
-    }
 
-    const result = (
-        await BidModel.create({ ...payload, provider: userId })
-    ).populate('provider task');
-
-    await Notification.create({
-        title: 'New Bid Placed',
-        message: `A new bid has been placed for the task "${task.title}"`,
-        receiver: task.customer._id,
-        type: ENUM_NOTIFICATION_TYPE.BID_PLACED,
-        redirectLink: `${task._id}`,
-    });
-    sendSinglePushNotification(
-        task!.customer._id.toString(),
-        'New Bid Placed',
-        `A new bid has been placed for the task "${task.title}"`,
-        { taskId: task._id.toString() }
-    );
+    const result = await BidModel.create({ ...payload, provider: userId });
     return result;
 };
 
@@ -143,6 +122,8 @@ const getBidsByTaskIDFromDB = async (
                 price: 1,
                 details: 1,
                 task: 1,
+                providerProposedAmount: 1,
+                customerProposedAmount: 1,
                 createdAt: 1,
                 updatedAt: 1,
 
@@ -153,6 +134,7 @@ const getBidsByTaskIDFromDB = async (
                     profile_image: '$provider.profile_image',
                     totalRatingCount: '$provider.totalRatingCount',
                     avgRating: '$provider.avgRating',
+                    serviceTypes: '$provider.serviceTypes',
                 },
             },
         },

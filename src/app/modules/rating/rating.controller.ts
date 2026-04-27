@@ -28,8 +28,7 @@ const getMyRatings = catchAsync(async (req, res) => {
     });
 });
 const getRatingsByTask = catchAsync(async (req, res) => {
-    const taskID = req.body.taskId;
-    const result = await RatingServices.getRatingsByTaskFromDB(taskID);
+    const result = await RatingServices.getRatingsByTaskFromDB(req.params.id);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
@@ -37,6 +36,20 @@ const getRatingsByTask = catchAsync(async (req, res) => {
         data: result,
     });
 });
+const getProviderRatings = catchAsync(async (req, res) => {
+    const result = await RatingServices.getProviderRatingsFromDB(req.params.id);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Ratings retrieved by providerId successfully',
+        data: result,
+    });
+});
 
-const RatingController = { createRating, getMyRatings, getRatingsByTask };
+const RatingController = {
+    createRating,
+    getMyRatings,
+    getRatingsByTask,
+    getProviderRatings,
+};
 export default RatingController;

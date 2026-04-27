@@ -105,7 +105,7 @@ const getAllProviderFromDB = async (query: Record<string, unknown>) => {
                             status: {
                                 $in: [
                                     ENUM_TASK_STATUS.IN_PROGRESS,
-                                    ENUM_TASK_STATUS.OPEN_FOR_BID,
+                                    ENUM_TASK_STATUS.OPEN,
                                 ],
                             },
                         },
@@ -181,8 +181,7 @@ const getProviderMetaDataFromDB = async (profileId: string) => {
         if (item._id === ENUM_TASK_STATUS.IN_PROGRESS)
             meta.inProgressCount = item.count;
 
-        if (item._id === ENUM_TASK_STATUS.OPEN_FOR_BID)
-            meta.pendingCount = item.count;
+        if (item._id === ENUM_TASK_STATUS.OPEN) meta.pendingCount = item.count;
     });
 
     const bids = await BidModel.aggregate([
@@ -202,7 +201,7 @@ const getProviderMetaDataFromDB = async (profileId: string) => {
         { $unwind: '$task' },
         {
             $match: {
-                'task.status': ENUM_TASK_STATUS.OPEN_FOR_BID,
+                'task.status': ENUM_TASK_STATUS.OPEN,
             },
         },
         { $count: 'count' },

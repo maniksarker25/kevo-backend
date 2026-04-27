@@ -25,7 +25,7 @@ const ratingSchema = new Schema<IRating>(
         },
         details: {
             type: String,
-            required: true,
+            default: '',
         },
     },
     { timestamps: true }
