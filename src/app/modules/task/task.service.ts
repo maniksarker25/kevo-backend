@@ -888,7 +888,17 @@ const completeTaskByCustomer = async (
     }
 };
 
-const startTaskByProvider = async (taskId: string, currentUserId: string) => {
+const startTaskByProvider = async (
+    taskId: string,
+    currentUserId: string,
+    payload: any
+) => {
+    if (!payload.beforeImages || payload.beforeImages.length === 0) {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            'Before images are required to start the task'
+        );
+    }
     const task = await TaskModel.findById(taskId);
 
     if (!task) {
@@ -910,6 +920,7 @@ const startTaskByProvider = async (taskId: string, currentUserId: string) => {
         taskId,
         {
             status: ENUM_TASK_STATUS.IN_PROGRESS,
+            beforeImages: payload.beforeImages,
         },
         {
             new: true,

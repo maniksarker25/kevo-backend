@@ -63,6 +63,8 @@ router.patch(
 router.patch(
     '/start-task/:id',
     auth(USER_ROLE.provider),
+    uploadFile(),
+    parseJsonBody(),
     TaskController.startTask
 );
 

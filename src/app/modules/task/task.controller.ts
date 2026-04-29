@@ -150,9 +150,17 @@ const completeTask = catchAsync(async (req, res) => {
 });
 const startTask = catchAsync(async (req, res) => {
     const currentUserId = req.user.profileId;
+
+    if (req.files?.beforeImages) {
+        req.body.beforeImages = req.files.beforeImages.map((file: any) => {
+            return getCloudFrontUrl(file.key);
+        });
+    }
+
     const result = await TaskServices.startTaskByProvider(
         req.params.id,
-        currentUserId
+        currentUserId,
+        req.body
     );
     sendResponse(res, {
         statusCode: httpStatus.OK,

@@ -58,7 +58,11 @@ const taskSchema = new Schema<ITask>(
         },
         description: { type: String, required: true },
         task_attachments: [{ type: String }],
-        imagesAfterCompletion: {
+        afterImages: {
+            type: [String],
+            default: [],
+        },
+        beforeImages: {
             type: [String],
             default: [],
         },
