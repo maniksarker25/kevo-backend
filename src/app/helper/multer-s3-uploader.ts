@@ -32,6 +32,8 @@ export const uploadFile = () => {
             'conversation_pdf',
             'conversation_image',
             'identification_document',
+            'beforeImages',
+            'afterImages',
         ];
 
         if (file.fieldname === undefined) {
@@ -96,6 +98,10 @@ export const uploadFile = () => {
                 uploadPath = 'uploads/images/conversation_image';
             } else if (file.fieldname === 'identification_document') {
                 uploadPath = 'uploads/documents/identification_document';
+            } else if (file.fieldname === 'beforeImages') {
+                uploadPath = 'uploads/images/task_images/beforeImages';
+            } else if (file.fieldname === 'afterImages') {
+                uploadPath = 'uploads/images/task_images/afterImages';
             } else {
                 uploadPath = 'uploads';
             }
@@ -131,6 +137,8 @@ export const uploadFile = () => {
         { name: 'conversation_image', maxCount: 5 },
         { name: 'conversation_pdf', maxCount: 2 },
         { name: 'identification_document', maxCount: 1 },
+        { name: 'beforeImages', maxCount: 5 },
+        { name: 'afterImages', maxCount: 5 },
     ]);
 
     return upload;
