@@ -137,8 +137,8 @@ export const uploadFile = () => {
         { name: 'conversation_image', maxCount: 5 },
         { name: 'conversation_pdf', maxCount: 2 },
         { name: 'identification_document', maxCount: 1 },
-        { name: 'beforeImages', maxCount: 5 },
-        { name: 'afterImages', maxCount: 5 },
+        { name: 'beforeImages', maxCount: 8 },
+        { name: 'afterImages', maxCount: 8 },
     ]);
 
     return upload;

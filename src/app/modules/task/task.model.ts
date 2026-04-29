@@ -74,6 +74,10 @@ const taskSchema = new Schema<ITask>(
             type: Date,
             default: null,
         },
+        markCompletedByCustomerAt: {
+            type: Date,
+            default: null,
+        },
 
         transactionId: { type: String, default: null },
     },

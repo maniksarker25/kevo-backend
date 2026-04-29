@@ -930,6 +930,49 @@ const startTaskByProvider = async (
     return updatedTask;
 };
 
+const markAsCompleteByProvider = async (
+    taskId: string,
+    currentUserId: string,
+    payload: any
+) => {
+    if (!payload.afterImages || payload.afterImages.length === 0) {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            'After images are required to mark the task as complete'
+        );
+    }
+    const task = await TaskModel.findById(taskId);
+
+    if (!task) {
+        throw new AppError(httpStatus.NOT_FOUND, 'Task not found');
+    }
+    if (task.provider?.toString() !== currentUserId) {
+        throw new AppError(
+            httpStatus.UNAUTHORIZED,
+            'You are not authorized to mark this task as complete'
+        );
+    }
+    if (task.status !== ENUM_TASK_STATUS.ASSIGNED) {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            'Only assigned task can be started'
+        );
+    }
+    const updatedTask = await TaskModel.findByIdAndUpdate(
+        taskId,
+        {
+            afterImages: payload.afterImages,
+            markCompletedByProviderAt: new Date(),
+            isMarkCompletedByProvider: true,
+        },
+        {
+            new: true,
+            runValidators: true,
+        }
+    );
+    return updatedTask;
+};
+
 const TaskServices = {
     createTaskIntoDB,
     getAllTaskFromDB,
@@ -942,5 +985,6 @@ const TaskServices = {
     updateTask,
     rejectOfferByProvider,
     startTaskByProvider,
+    markAsCompleteByProvider,
 };
 export default TaskServices;
