@@ -305,10 +305,7 @@ const getAllTaskFromDB = async (
         const skip = (page - 1) * limit;
         const searchTerm = query.searchTerm || '';
         const maxDistance = Number(query.maxDistance) * 1000 || 5000;
-        const minPrice = Number(query.minPrice) || null;
-        const maxPrice = Number(query.maxPrice) || null;
         const filters: Record<string, any> = {};
-        const isPopular = query.popular === 'true';
         Object.keys(query).forEach((key) => {
             if (
                 ![
@@ -339,18 +336,10 @@ const getAllTaskFromDB = async (
               }
             : {};
 
-        if (minPrice !== null || maxPrice !== null) {
-            filters.budget = {};
-            if (minPrice !== null) filters.budget.$gte = minPrice;
-            if (maxPrice !== null) filters.budget.$lte = maxPrice;
-        }
-
         // Sorting
         const sortBy = query.sortBy || 'createdAt';
         const sortOrder = query.sortOrder === 'asc' ? 1 : -1;
-        const sortStage = isPopular
-            ? { totalOffer: -1 }
-            : { [sortBy]: sortOrder };
+        const sortStage = { [sortBy]: sortOrder };
 
         const pipeline: any[] = [
             {
