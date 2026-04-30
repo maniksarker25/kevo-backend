@@ -6,6 +6,7 @@ import { deleteFileFromS3 } from '../../helper/deleteFromS3';
 import { Provider } from '../provider/provider.model';
 import SuperAdmin from '../superAdmin/superAdmin.model';
 import { ENUM_TASK_STATUS } from '../task/task.enum';
+import TaskModel from '../task/task.model';
 import { USER_ROLE } from '../user/user.constant';
 import { Customer } from './customer.model';
 
@@ -195,10 +196,85 @@ const getSingleCustomer = async (id: string) => {
     return result;
 };
 
+const customerHomeData = async (customerId: string) => {
+    const assignedTask = await TaskModel.find({
+        customer: customerId,
+        $or: [
+            { status: ENUM_TASK_STATUS.ASSIGNED },
+            { status: ENUM_TASK_STATUS.OPEN },
+        ],
+    }).select('title serviceType budget taskStartDateTime status');
+
+    const topProviders = await Provider.aggregate([
+        {
+            $lookup: {
+                from: 'ratings',
+                localField: '_id',
+                foreignField: 'provider',
+                as: 'ratings',
+            },
+        },
+
+        {
+            $addFields: {
+                ratingCount: { $size: '$ratings' },
+                avgRating: {
+                    $cond: [
+                        { $gt: [{ $size: '$ratings' }, 0] },
+                        { $avg: '$ratings.rating' },
+                        0, // 👈 IMPORTANT fallback
+                    ],
+                },
+            },
+        },
+
+        {
+            $addFields: {
+                score: {
+                    $add: [
+                        { $multiply: ['$avgRating', 2] }, // rating weight
+                        { $multiply: ['$ratingCount', 0.1] }, // trust weight
+                    ],
+                },
+            },
+        },
+
+        {
+            $sort: {
+                score: -1,
+                createdAt: -1,
+            },
+        },
+
+        {
+            $limit: 10,
+        },
+
+        {
+            $project: {
+                name: 1,
+                profile_image: 1,
+                email: 1,
+                serviceTypes: 1,
+                avgRating: 1,
+                ratingCount: 1,
+                score: 1,
+                isIdentificationDocumentApproved: 1,
+            },
+        },
+    ]);
+
+    return {
+        assignedTask,
+        topProviders,
+    };
+};
+
 const CustomerServices = {
     updateUserProfile,
     getAllCustomerFromDB,
     getSingleCustomer,
+    customerHomeData,
 };
 
 export default CustomerServices;

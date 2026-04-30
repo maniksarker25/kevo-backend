@@ -37,11 +37,21 @@ const getSingleCustomer = catchAsync(async (req, res) => {
         data: result,
     });
 });
+const getHomeData = catchAsync(async (req, res) => {
+    const result = await CustomerServices.customerHomeData(req.user.profileId);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Home data retrieved successfully',
+        data: result,
+    });
+});
 
 const CustomerController = {
     updateUserProfile,
     getAllCustomer,
     getSingleCustomer,
+    getHomeData,
 };
 
 export default CustomerController;

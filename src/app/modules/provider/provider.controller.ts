@@ -79,6 +79,18 @@ const verifyBVN = catchAsync(async (req, res) => {
         data: result,
     });
 });
+const homeData = catchAsync(async (req, res) => {
+    const result = await ProviderServices.homeData(
+        req.user.profileId,
+        req.query
+    );
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Home data retrieved successfully',
+        data: result,
+    });
+});
 
 const ProviderController = {
     getAllProvider,
@@ -87,5 +99,6 @@ const ProviderController = {
     getProviderMetaData,
     completeIdentityVerification,
     verifyBVN,
+    homeData,
 };
 export default ProviderController;

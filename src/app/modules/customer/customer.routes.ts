@@ -31,5 +31,9 @@ router.get(
     auth(USER_ROLE.admin, USER_ROLE.superAdmin),
     CustomerController.getSingleCustomer
 );
-
+router.get(
+    '/home-data',
+    auth(USER_ROLE.customer),
+    CustomerController.getHomeData
+);
 export const CustomerRoutes = router;

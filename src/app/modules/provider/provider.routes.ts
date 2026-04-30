@@ -51,4 +51,6 @@ router.post(
     validateRequest(ProviderValidations.verifyBVNZodSchema),
     ProviderController.verifyBVN
 );
+
+router.get('/home-data', auth(USER_ROLE.provider), ProviderController.homeData);
 export const providerRoutes = router;

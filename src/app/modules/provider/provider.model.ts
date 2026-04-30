@@ -30,6 +30,7 @@ const ProviderSchema = new Schema(
 
         profile_image: {
             type: String,
+            default: '',
         },
 
         identificationDocumentType: {

@@ -349,6 +349,69 @@ const verifyBVN = async (profileId: string, bvn: string) => {
     return result;
 };
 
+const homeData = async (providerId: string, query: Record<string, unknown>) => {
+    const lat = Number(query.lat);
+    const lng = Number(query.lng);
+    const maxDistance = Number(query.maxDistance) || 10;
+
+    const nearbyTasks = await TaskModel.aggregate([
+        {
+            $geoNear: {
+                near: {
+                    type: 'Point',
+                    coordinates: [lng, lat],
+                },
+                distanceField: 'distance',
+                spherical: true,
+                maxDistance: maxDistance * 1000,
+                query: {
+                    status: ENUM_TASK_STATUS.OPEN,
+                },
+            },
+        },
+        {
+            $sort: {
+                distance: 1,
+            },
+        },
+        {
+            $addFields: {
+                distanceKm: {
+                    $round: [{ $divide: ['$distance', 1000] }, 2],
+                },
+            },
+        },
+        {
+            $project: {
+                title: 1,
+                serviceType: 1,
+                budget: 1,
+                taskStartDateTime: 1,
+                status: 1,
+                distanceKm: 1,
+            },
+        },
+        {
+            $limit: 10,
+        },
+    ]);
+
+    const activeTask = await TaskModel.find({
+        provider: providerId,
+        status: {
+            $in: [
+                ENUM_TASK_STATUS.IN_PROGRESS,
+                ENUM_TASK_STATUS.IN_PROGRESS,
+                ENUM_TASK_STATUS.OPEN,
+            ],
+        },
+    }).select('title serviceType budget taskStartDateTime status');
+    return {
+        nearbyTasks,
+        activeTask,
+    };
+};
+
 const ProviderServices = {
     updateProviderFromDB,
     getAllProviderFromDB,
@@ -356,5 +419,6 @@ const ProviderServices = {
     getProviderMetaDataFromDB,
     completeIdentityVerificationFromDB,
     verifyBVN,
+    homeData,
 };
 export default ProviderServices;
