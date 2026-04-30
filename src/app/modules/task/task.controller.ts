@@ -169,6 +169,27 @@ const startTask = catchAsync(async (req, res) => {
         data: result,
     });
 });
+const markAsCompleteByProvider = catchAsync(async (req, res) => {
+    const currentUserId = req.user.profileId;
+
+    if (req.files?.afterImages) {
+        req.body.afterImages = req.files.afterImages.map((file: any) => {
+            return getCloudFrontUrl(file.key);
+        });
+    }
+
+    const result = await TaskServices.markAsCompleteByProvider(
+        req.params.id,
+        currentUserId,
+        req.body
+    );
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Task marked as complete successfully',
+        data: result,
+    });
+});
 
 const TaskController = {
     createTask,
@@ -182,5 +203,6 @@ const TaskController = {
     updateTask,
     rejectOfferByProvider,
     startTask,
+    markAsCompleteByProvider,
 };
 export default TaskController;

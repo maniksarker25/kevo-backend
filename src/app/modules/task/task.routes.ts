@@ -68,4 +68,11 @@ router.patch(
     TaskController.startTask
 );
 
+router.patch(
+    '/mark-as-complete-by-provider/:id',
+    auth(USER_ROLE.provider),
+    uploadFile(),
+    parseJsonBody(),
+    TaskController.markAsCompleteByProvider
+);
 export const taskRoutes = router;
