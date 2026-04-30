@@ -135,12 +135,9 @@ const acceptTaskByCustomer = catchAsync(async (req, res) => {
     });
 });
 const completeTask = catchAsync(async (req, res) => {
-    const { taskId } = req.body;
+    const { id } = req.params;
     const currentUserId = req.user.profileId;
-    const result = await TaskServices.completeTaskByCustomer(
-        taskId,
-        currentUserId
-    );
+    const result = await TaskServices.completeTaskByCustomer(id, currentUserId);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,

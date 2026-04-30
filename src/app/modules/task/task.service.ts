@@ -864,10 +864,18 @@ const completeTaskByCustomer = async (
             );
         }
 
+        if (task.status !== ENUM_TASK_STATUS.IN_PROGRESS) {
+            throw new AppError(
+                httpStatus.BAD_REQUEST,
+                'Only in-progress tasks can be marked as complete'
+            );
+        }
+
         const updatedTask = await TaskModel.findByIdAndUpdate(
             taskId,
             {
                 status: ENUM_TASK_STATUS.COMPLETED,
+                markCompletedByCustomerAt: new Date(),
             },
             {
                 new: true,

@@ -55,7 +55,7 @@ router.patch(
     TaskController.acceptTaskByCustomer
 );
 router.patch(
-    '/complete-task',
+    '/complete-task-by-customer/:id',
     auth(USER_ROLE.customer),
     TaskController.completeTask
 );
