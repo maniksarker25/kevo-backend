@@ -91,6 +91,15 @@ const homeData = catchAsync(async (req, res) => {
         data: result,
     });
 });
+const getTodaysActivity = catchAsync(async (req, res) => {
+    const result = await ProviderServices.getTodaysActivity(req.user.profileId);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Today's activity retrieved successfully",
+        data: result,
+    });
+});
 
 const ProviderController = {
     getAllProvider,
@@ -100,5 +109,6 @@ const ProviderController = {
     completeIdentityVerification,
     verifyBVN,
     homeData,
+    getTodaysActivity,
 };
 export default ProviderController;

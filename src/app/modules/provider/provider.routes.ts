@@ -53,4 +53,9 @@ router.post(
 );
 
 router.get('/home-data', auth(USER_ROLE.provider), ProviderController.homeData);
+router.get(
+    '/todays-activity',
+    auth(USER_ROLE.provider),
+    ProviderController.getTodaysActivity
+);
 export const providerRoutes = router;
