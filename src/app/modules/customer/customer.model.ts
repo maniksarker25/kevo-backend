@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Schema, model } from 'mongoose';
+import { ENUM_IDENTIFICATION_DOCUMENT } from './customer.enum';
 import { ICustomer } from './customer.interface';
 
 const customerSchema = new Schema<ICustomer>(
@@ -48,6 +49,23 @@ const customerSchema = new Schema<ICustomer>(
         stripeCustomerId: {
             type: String,
             default: null,
+        },
+        identificationDocumentType: {
+            type: String,
+            enum: Object.values(ENUM_IDENTIFICATION_DOCUMENT),
+        },
+
+        identificationDocumentNumber: {
+            type: String,
+        },
+
+        identification_document: {
+            type: String,
+        },
+
+        isIdentificationDocumentApproved: {
+            type: Boolean,
+            default: false,
         },
     },
     {

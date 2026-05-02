@@ -75,8 +75,11 @@ const loginUserIntoDB = async (payload: TLoginUser) => {
         const provider = await Provider.findById(user.profileId);
         obj.isIdentificationDocumentVerified =
             provider?.isIdentificationDocumentApproved;
+    } else {
+        const customer = await Provider.findById(user.profileId);
+        obj.isIdentificationDocumentVerified =
+            customer?.isIdentificationDocumentApproved;
     }
-
     return {
         accessToken,
         refreshToken,

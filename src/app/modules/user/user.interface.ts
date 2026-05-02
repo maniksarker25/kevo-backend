@@ -22,7 +22,6 @@ export interface TUser {
     appleId: string;
     googleId: string;
     playerIds: string[];
-    isAdminVerified: boolean;
     isMultiRole: boolean;
 }
 

@@ -12,7 +12,6 @@ import { default as bidModel, default as BidModel } from '../bid/bid.model';
 import { ENUM_NOTIFICATION_TYPE } from '../notification/notification.enum';
 import Notification from '../notification/notification.model';
 import { USER_ROLE } from '../user/user.constant';
-import { User } from '../user/user.model';
 import { ENUM_TASK_STATUS } from './task.enum';
 import TaskModel from './task.model';
 const ALL_STATUSES = ['OPEN_FOR_BID', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'];
@@ -23,17 +22,6 @@ const createTaskIntoDB = async (
 ) => {
     const profileId = userData.profileId;
 
-    const user = await User.findById(userData.id);
-    if (!user) {
-        throw new AppError(httpStatus.NOT_FOUND, 'User not found');
-    }
-
-    if (!user.isAdminVerified) {
-        throw new AppError(
-            httpStatus.FORBIDDEN,
-            'Your account is not verified by admin yet'
-        );
-    }
     if (payload.provider) {
         payload.status = ENUM_TASK_STATUS.PRIVATE;
     }
