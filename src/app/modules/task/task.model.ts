@@ -78,6 +78,10 @@ const taskSchema = new Schema<ITask>(
             type: Date,
             default: null,
         },
+        cancelledAt: {
+            type: Date,
+            default: null,
+        },
 
         transactionId: { type: String, default: null },
     },

@@ -412,6 +412,79 @@ const homeData = async (providerId: string, query: Record<string, unknown>) => {
     };
 };
 
+const getTodaysActivity = async (providerId: string) => {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const result = await TaskModel.aggregate([
+        {
+            $match: {
+                provider: providerId,
+            },
+        },
+        {
+            $facet: {
+                activeTask: [
+                    {
+                        $match: {
+                            status: ENUM_TASK_STATUS.IN_PROGRESS,
+                        },
+                    },
+                    { $count: 'count' },
+                ],
+                completedTask: [
+                    {
+                        $match: {
+                            status: ENUM_TASK_STATUS.COMPLETED,
+                            markCompletedByProviderAt: {
+                                $gte: startOfDay,
+                                $lte: endOfDay,
+                            },
+                        },
+                    },
+                    { $count: 'count' },
+                ],
+                assignedTask: [
+                    {
+                        $match: {
+                            status: ENUM_TASK_STATUS.ASSIGNED,
+                            taskStartDateTime: {
+                                $gte: startOfDay,
+                                $lte: endOfDay,
+                            },
+                        },
+                    },
+                    { $count: 'count' },
+                ],
+                cancelledTask: [
+                    {
+                        $match: {
+                            status: ENUM_TASK_STATUS.CANCELLED,
+                            cancelledAt: {
+                                $gte: startOfDay,
+                                $lte: endOfDay,
+                            },
+                        },
+                    },
+                    { $count: 'count' },
+                ],
+            },
+        },
+    ]);
+
+    const data = result[0];
+
+    return {
+        activeTask: data.activeTask[0]?.count || 0,
+        completedTask: data.completedTask[0]?.count || 0,
+        assignedTask: data.assignedTask[0]?.count || 0,
+        cancelledTask: data.cancelledTask[0]?.count || 0,
+    };
+};
+
 const ProviderServices = {
     updateProviderFromDB,
     getAllProviderFromDB,
@@ -420,5 +493,6 @@ const ProviderServices = {
     completeIdentityVerificationFromDB,
     verifyBVN,
     homeData,
+    getTodaysActivity,
 };
 export default ProviderServices;

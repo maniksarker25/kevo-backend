@@ -26,6 +26,7 @@ export interface ITask {
     isMarkCompletedByProvider?: boolean;
     markCompletedByProviderAt?: Date;
     markCompletedByCustomerAt?: Date;
+    cancelledAt?: Date;
     transactionId?: string;
     deletedImages: string[];
     isDeleted: boolean;

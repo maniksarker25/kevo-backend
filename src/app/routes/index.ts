@@ -13,7 +13,6 @@ import { paymentRoutes } from '../modules/payment/payment.routes';
 import { providerRoutes } from '../modules/provider/provider.routes';
 import { ratingRoutes } from '../modules/rating/rating.routes';
 import { referralRoutes } from '../modules/referral/referral.routes';
-import { referralUseRoutes } from '../modules/referralUse/referralUse.routes';
 import { superAdminRoutes } from '../modules/superAdmin/superAdmin.routes';
 import { taskRoutes } from '../modules/task/task.routes';
 import { transactionRoutes } from '../modules/transaction/transaction.routes';
@@ -69,10 +68,6 @@ const moduleRoutes = [
     {
         path: '/meta',
         router: metaRoutes,
-    },
-    {
-        path: '/referralUse',
-        router: referralUseRoutes,
     },
     {
         path: '/conversation',

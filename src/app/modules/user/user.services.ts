@@ -220,6 +220,11 @@ const resendVerifyCode = async (email: string) => {
             'Something went wrong . Please again resend the code after a few second'
         );
     }
+    sendEmail({
+        email: email,
+        subject: 'Activate Your Account',
+        html: registrationSuccessEmail('User', parseInt(verifyCode.toString())),
+    });
 
     return null;
 };
