@@ -15,6 +15,7 @@ const taskSchema = new Schema<ITask>(
         budget: { type: Number, required: true },
         taskStartDateTime: { type: Date, default: null },
         acceptedBidAmount: { type: Number, default: null },
+        bidAcceptAt: { type: Date, default: null },
         customerPayingAmount: { type: Number, default: null },
         providerEarningAmount: { type: Number, default: null },
         status: {

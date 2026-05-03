@@ -30,4 +30,5 @@ export interface ITask {
     transactionId?: string;
     deletedImages: string[];
     isDeleted: boolean;
+    bidAcceptAt: Date;
 }

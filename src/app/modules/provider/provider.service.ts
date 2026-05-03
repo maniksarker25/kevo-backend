@@ -490,19 +490,28 @@ const getProviderMonthlyTasks = async (
     month: number,
     year: number
 ) => {
-    const startDate = new Date(year, month - 1, 1, 0, 0, 0);
-    const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+    const startOfMonth = new Date(year, month - 1, 1, 0, 0, 0);
+    const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999);
 
     const tasks = await TaskModel.find({
         provider: providerId,
         isDeleted: false,
-        taskStartDateTime: {
-            $gte: startDate,
-            $lte: endDate,
-        },
-    })
-        .populate('customer')
-        .sort({ taskStartDateTime: -1 });
+        $or: [
+            {
+                taskStartDateTime: {
+                    $gte: startOfMonth,
+                    $lte: endOfMonth,
+                },
+            },
+            {
+                taskStartDateTime: null,
+                bidAcceptAt: {
+                    $gte: startOfMonth,
+                    $lte: endOfMonth,
+                },
+            },
+        ],
+    }).sort({ createdAt: -1 });
 
     return tasks;
 };
