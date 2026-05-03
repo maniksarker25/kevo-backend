@@ -75,4 +75,11 @@ router.patch(
     parseJsonBody(),
     TaskController.markAsCompleteByProvider
 );
+
+router.patch(
+    '/cancel-task/:id',
+    auth(USER_ROLE.customer),
+    TaskController.cancelTaskByCustomer
+);
+
 export const taskRoutes = router;

@@ -958,6 +958,50 @@ const markAsCompleteByProvider = async (
     return updatedTask;
 };
 
+const cancelTaskByCustomer = async (customerId: string, id: string) => {
+    const task = await TaskModel.findOne({ _id: id, customer: customerId });
+    if (!task) {
+        throw new AppError(httpStatus.NOT_FOUND, 'Task not found');
+    }
+
+    if (
+        task.status == ENUM_TASK_STATUS.IN_PROGRESS ||
+        task.status == ENUM_TASK_STATUS.COMPLETED
+    ) {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            `You are not able to cancel ${task.status} task`
+        );
+    } else if (
+        task.status == ENUM_TASK_STATUS.OPEN ||
+        task.status == ENUM_TASK_STATUS.PRIVATE
+    ) {
+        const result = await TaskModel.findByIdAndDelete(id);
+        if (task?.task_attachments?.length > 0) {
+            for (const fileUrl of task.task_attachments) {
+                await deleteFileFromS3(fileUrl);
+            }
+        }
+        return {
+            result,
+            message: 'Task is cancelled and deleted',
+        };
+    } else if (task.status == ENUM_TASK_STATUS.ASSIGNED) {
+        const result = await TaskModel.findByIdAndUpdate(id, {
+            status: ENUM_TASK_STATUS.CANCELLED,
+        });
+        return {
+            result,
+            message: 'Task is cancelled',
+        };
+    } else {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            `You are not able to cancel ${task.status} task`
+        );
+    }
+};
+
 const TaskServices = {
     createTaskIntoDB,
     getAllTaskFromDB,
@@ -971,5 +1015,6 @@ const TaskServices = {
     rejectOfferByProvider,
     startTaskByProvider,
     markAsCompleteByProvider,
+    cancelTaskByCustomer,
 };
 export default TaskServices;

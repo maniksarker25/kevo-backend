@@ -187,6 +187,18 @@ const markAsCompleteByProvider = catchAsync(async (req, res) => {
         data: result,
     });
 });
+const cancelTaskByCustomer = catchAsync(async (req, res) => {
+    const result = await TaskServices.cancelTaskByCustomer(
+        req.user.profileId,
+        req.params.id
+    );
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: result.message,
+        data: result.result,
+    });
+});
 
 const TaskController = {
     createTask,
@@ -201,5 +213,6 @@ const TaskController = {
     rejectOfferByProvider,
     startTask,
     markAsCompleteByProvider,
+    cancelTaskByCustomer,
 };
 export default TaskController;
