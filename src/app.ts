@@ -11,11 +11,13 @@ import sendContactUsEmail from './app/helper/sendContactUsEmail';
 
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import notFound from './app/middlewares/notFound';
+import { rateLimiters } from './app/middlewares/rateLimiter.middleware';
 import router from './app/routes';
 import handleConnectedAccountWebhook from './app/stripeManager/connectedAccountWebhook';
 import handleWebhook from './app/stripeManager/webhook';
 const app: Application = express();
-
+// VERY IMPORTANT (for proxy / nginx)
+app.set('trust proxy', 1);
 // web hook
 app.post('/webhook', express.raw({ type: 'application/json' }), handleWebhook);
 app.post(
@@ -47,6 +49,8 @@ app.use(
 );
 app.use('/uploads', express.static('uploads'));
 // application routers ----------------
+
+app.use(rateLimiters.apiLimiter);
 app.use('/api/v1', router);
 app.post('/contact-us', sendContactUsEmail);
 

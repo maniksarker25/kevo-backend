@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import validateRequest from '../../middlewares/validateRequest';
 
+import { authLimiter } from '../../config/rateLimit.config';
 import auth from '../../middlewares/auth';
 import { USER_ROLE } from '../user/user.constant';
 import authControllers from './auth.controller';
@@ -10,12 +11,14 @@ const router = Router();
 
 router.post(
     '/login',
+    authLimiter,
     validateRequest(authValidations.loginValidationSchema),
     authControllers.loginUser
 );
 
 router.post(
     '/change-password',
+    authLimiter,
     auth(
         USER_ROLE.customer,
         USER_ROLE.provider,
@@ -27,34 +30,37 @@ router.post(
 );
 router.post(
     '/refresh-token',
-    // auth(
-    //     USER_ROLE.customer,
-    //     USER_ROLE.provider,
-    //     USER_ROLE.admin,
-    //     USER_ROLE.superAdmin
-    // ),
+    authLimiter,
     validateRequest(authValidations.refreshTokenValidationSchema),
     authControllers.refreshToken
 );
 
 router.post(
     '/forget-password',
+    authLimiter,
+
     validateRequest(authValidations.forgetPasswordValidationSchema),
     authControllers.forgetPassword
 );
 router.post(
     '/reset-password',
+    authLimiter,
+
     validateRequest(authValidations.resetPasswordValidationSchema),
     authControllers.resetPassword
 );
 router.post(
     '/verify-reset-otp',
+    authLimiter,
+
     validateRequest(authValidations.verifyResetOtpValidationSchema),
     authControllers.verifyResetOtp
 );
 
 router.post(
     '/resend-reset-code',
+    authLimiter,
+
     validateRequest(authValidations.resendResetCodeValidationSchema),
     authControllers.resendResetCode
 );

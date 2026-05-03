@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { authLimiter } from '../../config/rateLimit.config';
 import { uploadFile } from '../../helper/multer-s3-uploader';
 import auth from '../../middlewares/auth';
 import parseJsonBody from '../../middlewares/parseJsonBody';
@@ -12,24 +13,32 @@ const router = Router();
 
 router.post(
     '/sign-up',
+    authLimiter,
+
     validateRequest(CustomerValidations.createCustomerSchema),
     userControllers.registerUser
 );
 //
 router.post(
     '/verify-code',
+    authLimiter,
+
     validateRequest(userValidations.verifyCodeValidationSchema),
     userControllers.verifyCode
 );
 
 router.post(
     '/resend-verify-code',
+    authLimiter,
+
     validateRequest(userValidations.resendVerifyCodeSchema),
     userControllers.resendVerifyCode
 );
 
 router.get(
     '/get-my-profile',
+    authLimiter,
+
     auth(
         USER_ROLE.customer,
         USER_ROLE.provider,
@@ -40,6 +49,8 @@ router.get(
 );
 router.patch(
     '/update-profile',
+    authLimiter,
+
     auth(
         USER_ROLE.customer,
         USER_ROLE.provider,
