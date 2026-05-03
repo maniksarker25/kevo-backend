@@ -485,6 +485,28 @@ const getTodaysActivity = async (providerId: string) => {
     };
 };
 
+const getProviderMonthlyTasks = async (
+    providerId: string,
+    month: number,
+    year: number
+) => {
+    const startDate = new Date(year, month - 1, 1, 0, 0, 0);
+    const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+
+    const tasks = await TaskModel.find({
+        provider: providerId,
+        isDeleted: false,
+        taskStartDateTime: {
+            $gte: startDate,
+            $lte: endDate,
+        },
+    })
+        .populate('customer')
+        .sort({ taskStartDateTime: -1 });
+
+    return tasks;
+};
+
 const ProviderServices = {
     updateProviderFromDB,
     getAllProviderFromDB,
@@ -494,5 +516,6 @@ const ProviderServices = {
     verifyBVN,
     homeData,
     getTodaysActivity,
+    getProviderMonthlyTasks,
 };
 export default ProviderServices;

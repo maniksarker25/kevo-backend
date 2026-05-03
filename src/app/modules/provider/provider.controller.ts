@@ -100,6 +100,19 @@ const getTodaysActivity = catchAsync(async (req, res) => {
         data: result,
     });
 });
+const getProviderMonthlyTasks = catchAsync(async (req, res) => {
+    const result = await ProviderServices.getProviderMonthlyTasks(
+        req.user.profileId,
+        Number(req.query.month),
+        Number(req.query.year)
+    );
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Monthly task is retrieved successfully',
+        data: result,
+    });
+});
 
 const ProviderController = {
     getAllProvider,
@@ -110,5 +123,6 @@ const ProviderController = {
     verifyBVN,
     homeData,
     getTodaysActivity,
+    getProviderMonthlyTasks,
 };
 export default ProviderController;

@@ -51,11 +51,15 @@ router.post(
     validateRequest(ProviderValidations.verifyBVNZodSchema),
     ProviderController.verifyBVN
 );
-
 router.get('/home-data', auth(USER_ROLE.provider), ProviderController.homeData);
 router.get(
     '/todays-activity',
     auth(USER_ROLE.provider),
     ProviderController.getTodaysActivity
+);
+router.get(
+    '/monthly-tasks',
+    auth(USER_ROLE.provider),
+    ProviderController.getProviderMonthlyTasks
 );
 export const providerRoutes = router;
