@@ -57,13 +57,7 @@ router.post(
     authControllers.verifyResetOtp
 );
 
-router.post(
-    '/resend-reset-code',
-    authLimiter,
-
-    validateRequest(authValidations.resendResetCodeValidationSchema),
-    authControllers.resendResetCode
-);
+router.post('/resend-reset-code', authLimiter, authControllers.resendResetCode);
 router.get(
     '/all-user',
 

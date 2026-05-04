@@ -60,8 +60,10 @@ const verifyResetOtpValidationSchema = z.object({
 });
 
 const resendResetCodeValidationSchema = z.object({
-    email: z.object({
-        phone: z.string({ required_error: 'Phone number is required' }),
+    body: z.object({
+        email: z.object({
+            email: z.string({ required_error: 'Email number is required' }),
+        }),
     }),
 });
 

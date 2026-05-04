@@ -1,14 +1,33 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Types } from 'mongoose';
-import {
-    ENUM_TRANSACTION_REASON,
-    ENUM_TRANSACTION_TYPE,
-} from './transaction.enum';
+import { TRANSACTION_STATUS, TRANSACTION_TYPE } from './transaction.enum';
 
 export interface ITransaction {
+    provider?: Types.ObjectId;
+    customer?: Types.ObjectId;
+    task?: Types.ObjectId;
+
+    type: TRANSACTION_TYPE;
+    status: TRANSACTION_STATUS;
+
     amount: number;
-    type: (typeof ENUM_TRANSACTION_TYPE)[keyof typeof ENUM_TRANSACTION_TYPE];
-    transactionId: string;
-    reason: (typeof ENUM_TRANSACTION_REASON)[keyof typeof ENUM_TRANSACTION_REASON];
-    user: Types.ObjectId;
-    userType: 'Customer' | 'Provider';
+    currency: string;
+
+    // Stripe references
+    stripePaymentIntentId?: string;
+    stripeChargeId?: string;
+    stripeTransferId?: string;
+    stripePayoutId?: string;
+    stripeRefundId?: string;
+
+    stripeAccountId?: string;
+
+    stripeEventId?: string;
+
+    metadata?: Record<string, any>;
+
+    description?: string;
+
+    createdAt?: Date;
+    updatedAt?: Date;
 }

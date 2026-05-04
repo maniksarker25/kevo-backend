@@ -1,43 +1,82 @@
 import { model, Schema } from 'mongoose';
-import {
-    ENUM_TRANSACTION_REASON,
-    ENUM_TRANSACTION_TYPE,
-} from './transaction.enum';
+import { TRANSACTION_STATUS, TRANSACTION_TYPE } from './transaction.enum';
 import { ITransaction } from './transaction.interface';
 
-const transactionSchema = new Schema<ITransaction>(
+const transactionSchema = new Schema(
     {
+        provider: {
+            type: Schema.Types.ObjectId,
+            ref: 'Provider',
+            index: true,
+        },
+
+        customer: {
+            type: Schema.Types.ObjectId,
+            ref: 'Customer',
+            index: true,
+        },
+
+        task: {
+            type: Schema.Types.ObjectId,
+            ref: 'Task',
+            index: true,
+        },
+
+        type: {
+            type: String,
+            enum: Object.values(TRANSACTION_TYPE),
+            required: true,
+            index: true,
+        },
+
+        status: {
+            type: String,
+            enum: Object.values(TRANSACTION_STATUS),
+            default: TRANSACTION_STATUS.PENDING,
+            index: true,
+        },
+
         amount: {
             type: Number,
             required: true,
+            min: 0,
         },
-        type: {
+
+        currency: {
             type: String,
-            enum: Object.values(ENUM_TRANSACTION_TYPE),
-            required: true,
+            default: 'usd',
         },
-        transactionId: {
+
+        // 🔗 Stripe references
+        stripePaymentIntentId: { type: String, index: true },
+        stripeChargeId: { type: String },
+        stripeTransferId: { type: String, index: true },
+        stripePayoutId: { type: String, index: true },
+        stripeRefundId: { type: String },
+
+        stripeAccountId: {
             type: String,
-            required: true,
-            unique: true,
+            index: true,
         },
-        reason: {
+
+        stripeEventId: {
             type: String,
-            enum: Object.values(ENUM_TRANSACTION_REASON),
-            required: true,
+            unique: true, // prevents duplicate webhook processing
+            sparse: true,
         },
-        user: {
-            type: Schema.Types.ObjectId,
-            refPath: 'userType',
-            required: true,
+
+        metadata: {
+            type: Schema.Types.Mixed,
         },
-        userType: {
+
+        description: {
             type: String,
-            required: true,
-            enum: ['Customer', 'Provider'],
+            trim: true,
         },
     },
-    { timestamps: true }
+    {
+        timestamps: true,
+    }
 );
 
 const Transaction = model<ITransaction>('Transaction', transactionSchema);

@@ -1,10 +1,21 @@
-export const ENUM_TRANSACTION_TYPE = {
-    Earning: 'Earning',
-    Withdraw: 'Withdraw',
-    Adjustment: 'Adjustment',
-};
+/* eslint-disable no-unused-vars */
+export enum TRANSACTION_TYPE {
+    PAYMENT = 'PAYMENT',
+    EARNING = 'EARNING',
+    PLATFORM_FEE = 'PLATFORM_FEE',
+    TRANSFER = 'TRANSFER',
+    PAYOUT = 'PAYOUT',
+    REFUND = 'REFUND',
+}
 
 export const ENUM_TRANSACTION_REASON = {
     BID_ACCEPT: 'BID_ACCEPT',
     REFERRAL_BONUS: 'REFERRAL_BONUS',
 };
+
+export enum TRANSACTION_STATUS {
+    PENDING = 'PENDING',
+    COMPLETED = 'COMPLETED',
+    FAILED = 'FAILED',
+    CANCELED = 'CANCELED',
+}
