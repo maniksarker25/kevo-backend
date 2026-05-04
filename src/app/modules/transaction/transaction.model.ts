@@ -13,7 +13,7 @@ const transactionSchema = new Schema(
         customer: {
             type: Schema.Types.ObjectId,
             ref: 'Customer',
-            index: true,
+            default: null,
         },
 
         task: {

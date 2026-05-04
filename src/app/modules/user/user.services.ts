@@ -238,10 +238,103 @@ const getMyProfile = async (userData: JwtPayload) => {
         });
     }
     if (userData.role === USER_ROLE.provider) {
-        result = await Provider.findOne({ email: userData.email }).populate({
-            path: 'user',
-            select: 'isBlocked isActive isAdminVerified',
-        });
+        result = await Provider.aggregate([
+            {
+                $match: {
+                    email: userData.email,
+                },
+            },
+
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { userId: '$user' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $eq: ['$_id', '$$userId'] },
+                            },
+                        },
+                        {
+                            $project: {
+                                isBlocked: 1,
+                                isActive: 1,
+                            },
+                        },
+                    ],
+                    as: 'user',
+                },
+            },
+
+            {
+                $unwind: {
+                    path: '$user',
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+
+            {
+                $lookup: {
+                    from: 'tasks',
+                    let: { providerId: '$_id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$provider', '$$providerId'] },
+                                        {
+                                            $eq: [
+                                                '$isMarkCompletedByProvider',
+                                                true,
+                                            ],
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    ],
+                    as: 'completedTasks',
+                },
+            },
+
+            {
+                $lookup: {
+                    from: 'ratings',
+                    let: { providerId: '$_id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $eq: ['$provider', '$$providerId'] },
+                            },
+                        },
+                    ],
+                    as: 'ratings',
+                },
+            },
+
+            {
+                $addFields: {
+                    totalJobComplete: { $size: '$completedTasks' },
+                    totalRatingCount: { $size: '$ratings' },
+
+                    avgRating: {
+                        $cond: [
+                            { $gt: [{ $size: '$ratings' }, 0] },
+                            { $avg: '$ratings.rating' },
+                            0,
+                        ],
+                    },
+                },
+            },
+
+            {
+                $project: {
+                    completedTasks: 0,
+                    ratings: 0,
+                },
+            },
+        ]);
     } else if (userData.role === USER_ROLE.superAdmin) {
         result = await SuperAdmin.findOne({ email: userData.email }).populate({
             path: 'user',
