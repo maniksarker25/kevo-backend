@@ -16,6 +16,7 @@ import { ICustomer } from '../customer/customer.interface';
 import { Customer } from '../customer/customer.model';
 import { Provider } from '../provider/provider.model';
 import SuperAdmin from '../superAdmin/superAdmin.model';
+import { ENUM_TASK_STATUS } from '../task/task.enum';
 import { USER_ROLE } from './user.constant';
 import { UpdateUserProfileDTO } from './user.dto';
 import { TUserRole } from './user.interface';
@@ -285,8 +286,8 @@ const getMyProfile = async (userData: JwtPayload) => {
                                         { $eq: ['$provider', '$$providerId'] },
                                         {
                                             $eq: [
-                                                '$isMarkCompletedByProvider',
-                                                true,
+                                                '$status',
+                                                ENUM_TASK_STATUS.COMPLETED,
                                             ],
                                         },
                                     ],
