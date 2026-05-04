@@ -1,9 +1,10 @@
 export const ENUM_TRANSACTION_TYPE = {
-    CREDIT: 'CREDIT',
-    DEBIT: 'DEBIT',
+    Earning: 'Earning',
+    Withdraw: 'Withdraw',
+    Adjustment: 'Adjustment',
 };
 
 export const ENUM_TRANSACTION_REASON = {
-    BID_ACCEPT_PAYMENT: 'BID_ACCEPT_PAYMENT',
+    BID_ACCEPT: 'BID_ACCEPT',
     REFERRAL_BONUS: 'REFERRAL_BONUS',
 };

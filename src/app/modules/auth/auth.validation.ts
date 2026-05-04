@@ -35,7 +35,7 @@ const refreshTokenValidationSchema = z.object({
 // forget password validation schema
 const forgetPasswordValidationSchema = z.object({
     body: z.object({
-        phone: z.string({ required_error: 'Phone number is required' }),
+        email: z.string({ required_error: 'Email is required' }),
     }),
 });
 // reset password validation schema

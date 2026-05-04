@@ -179,8 +179,8 @@ const refreshToken = async (token: string) => {
 };
 
 // forgot password
-const forgetPassword = async (phone: string) => {
-    const user = await User.findOne({ phone: phone });
+const forgetPassword = async (email: string) => {
+    const user = await User.findOne({ email: email });
     if (!user) {
         throw new AppError(httpStatus.NOT_FOUND, 'This user does not exist');
     }
@@ -196,7 +196,7 @@ const forgetPassword = async (phone: string) => {
 
     const resetCode = generateVerifyCode();
     await User.findOneAndUpdate(
-        { phone: phone },
+        { email },
         {
             resetCode: resetCode,
             isResetVerified: false,
