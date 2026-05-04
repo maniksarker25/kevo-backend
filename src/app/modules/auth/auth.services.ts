@@ -214,8 +214,8 @@ const forgetPassword = async (email: string) => {
 
 // verify forgot otp
 
-const verifyResetOtp = async (phone: string, resetCode: number) => {
-    const user = await User.findOne({ phone: phone });
+const verifyResetOtp = async (email: string, resetCode: number) => {
+    const user = await User.findOne({ email: email });
     if (!user) {
         throw new AppError(httpStatus.NOT_FOUND, 'This user does not exist');
     }
@@ -236,7 +236,7 @@ const verifyResetOtp = async (phone: string, resetCode: number) => {
         throw new AppError(httpStatus.BAD_REQUEST, 'Reset code is invalid');
     }
     await User.findOneAndUpdate(
-        { phone: phone },
+        { email },
         { isResetVerified: true },
         { new: true, runValidators: true }
     );
@@ -245,7 +245,7 @@ const verifyResetOtp = async (phone: string, resetCode: number) => {
 
 // reset password
 const resetPassword = async (payload: {
-    phone: string;
+    email: string;
     password: string;
     confirmPassword: string;
 }) => {
@@ -255,7 +255,7 @@ const resetPassword = async (payload: {
             "Password and confirm password doesn't match"
         );
     }
-    const user = await User.findOne({ phone: payload.phone });
+    const user = await User.findOne({ email: payload.email });
     if (!user) {
         throw new AppError(httpStatus.NOT_FOUND, 'This user does not exist');
     }
@@ -281,7 +281,7 @@ const resetPassword = async (payload: {
     );
     await User.findOneAndUpdate(
         {
-            phone: payload.phone,
+            email: payload.email,
         },
         {
             password: newHashedPassword,
@@ -308,8 +308,8 @@ const resetPassword = async (payload: {
     return { accessToken, refreshToken };
 };
 
-const resendResetCode = async (phone: string) => {
-    const user = await User.findOne({ phone: phone });
+const resendResetCode = async (email: string) => {
+    const user = await User.findOne({ email: email });
     if (!user) {
         throw new AppError(httpStatus.NOT_FOUND, 'This user does not exist');
     }
@@ -325,7 +325,7 @@ const resendResetCode = async (phone: string) => {
 
     const resetCode = generateVerifyCode();
     await User.findOneAndUpdate(
-        { phone: phone },
+        { email },
         {
             resetCode: resetCode,
             isResetVerified: false,
