@@ -118,7 +118,6 @@ const getAllCustomerFromDB = async (query: Record<string, unknown>) => {
                     {
                         $project: {
                             isBlocked: 1,
-                            isAdminVerified: 1,
                             isActive: 1,
                         },
                     },

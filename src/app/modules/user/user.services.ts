@@ -239,7 +239,7 @@ const getMyProfile = async (userData: JwtPayload) => {
         });
     }
     if (userData.role === USER_ROLE.provider) {
-        result = await Provider.aggregate([
+        const data = await Provider.aggregate([
             {
                 $match: {
                     email: userData.email,
@@ -336,6 +336,7 @@ const getMyProfile = async (userData: JwtPayload) => {
                 },
             },
         ]);
+        result = data[0];
     } else if (userData.role === USER_ROLE.superAdmin) {
         result = await SuperAdmin.findOne({ email: userData.email }).populate({
             path: 'user',
@@ -445,19 +446,6 @@ const changeUserStatus = async (id: string) => {
     const result = await User.findByIdAndUpdate(
         id,
         { isBlocked: !user.isBlocked },
-        { new: true, runValidators: true }
-    );
-    return result;
-};
-
-const adminVerifyUserFromDB = async (id: string) => {
-    const user = await User.findById(id);
-    if (!user) {
-        throw new AppError(httpStatus.NOT_FOUND, 'User not found');
-    }
-    const result = await User.findByIdAndUpdate(
-        id,
-        { isAdminVerified: true },
         { new: true, runValidators: true }
     );
     return result;
@@ -659,7 +647,6 @@ const userServices = {
     changeUserStatus,
     deleteUserAccount,
     updateUserProfile,
-    adminVerifyUserFromDB,
     upgradeAccount,
 };
 

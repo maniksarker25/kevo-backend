@@ -8,6 +8,7 @@ import mongoose from 'mongoose';
 import { deleteFileFromS3 } from '../../helper/deleteFromS3';
 import { sendSinglePushNotification } from '../../helper/sendPushNotification';
 import { buildDateRangesByType } from '../../utilities/buildDateRangeByType';
+import stripe from '../../utilities/stripe';
 import { default as bidModel, default as BidModel } from '../bid/bid.model';
 import { ENUM_NOTIFICATION_TYPE } from '../notification/notification.enum';
 import Notification from '../notification/notification.model';
@@ -829,7 +830,9 @@ const completeTaskByCustomer = async (
     session.startTransaction();
 
     try {
-        const task = await TaskModel.findById(taskId).session(session);
+        const task: any = await TaskModel.findById(taskId)
+            .populate('provider', 'stripeAccountId')
+            .session(session);
         if (!task) {
             throw new AppError(httpStatus.NOT_FOUND, 'Task not found');
         }
@@ -860,6 +863,15 @@ const completeTaskByCustomer = async (
                 session,
             }
         );
+        //!TODO: need to change the amount based on policy
+        await stripe.transfers.create({
+            amount: task.providerEarningAmount * 100,
+            currency: 'usd',
+            destination: task.provider.stripeAccountId,
+            metadata: {
+                taskId: task._id.toString(),
+            },
+        });
 
         // COMMIT TRANSACTION
         await session.commitTransaction();

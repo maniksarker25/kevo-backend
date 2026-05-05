@@ -88,18 +88,7 @@ const deleteUserAccount = catchAsync(async (req, res) => {
         data: result,
     });
 });
-const adminVerifyUser = catchAsync(async (req, res) => {
-    const result = await userServices.adminVerifyUserFromDB(req.params.id);
 
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: result?.isAdminVerified
-            ? 'Mark as verified'
-            : 'Mark as unverified',
-        data: result,
-    });
-});
 const upgradeAccount = catchAsync(async (req, res) => {
     const result = await userServices.upgradeAccount(req.user);
 
@@ -119,7 +108,6 @@ const userController = {
     changeUserStatus,
     deleteUserAccount,
     updateUserProfile,
-    adminVerifyUser,
     upgradeAccount,
 };
 export default userController;

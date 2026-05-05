@@ -37,8 +37,6 @@ router.post(
 
 router.get(
     '/get-my-profile',
-    authLimiter,
-
     auth(
         USER_ROLE.customer,
         USER_ROLE.provider,
@@ -49,7 +47,6 @@ router.get(
 );
 router.patch(
     '/update-profile',
-    authLimiter,
 
     auth(
         USER_ROLE.customer,
@@ -73,11 +70,6 @@ router.post(
     auth(USER_ROLE.customer),
     validateRequest(userValidations.deleteUserAccountValidationSchema),
     userControllers.deleteUserAccount
-);
-router.patch(
-    '/verify-user/:id',
-    auth(USER_ROLE.admin, USER_ROLE.superAdmin),
-    userControllers.adminVerifyUser
 );
 
 router.post(
