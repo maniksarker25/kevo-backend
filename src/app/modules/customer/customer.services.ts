@@ -202,7 +202,9 @@ const customerHomeData = async (customerId: string) => {
             { status: ENUM_TASK_STATUS.ASSIGNED },
             { status: ENUM_TASK_STATUS.OPEN },
         ],
-    }).select('title serviceType budget taskStartDateTime status');
+    }).select(
+        'title serviceType budget taskStartDateTime status address location'
+    );
 
     const topProviders = await Provider.aggregate([
         {

@@ -62,5 +62,5 @@ const reportSchema = new Schema<IReport>(
 );
 
 reportSchema.index({ reportBy: 1, reportTo: 1, task: 1 }, { unique: true });
-const ReportModel = model<IReport>('Report', reportSchema);
-export default ReportModel;
+const Report = model<IReport>('Report', reportSchema);
+export default Report;

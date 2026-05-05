@@ -145,10 +145,104 @@ const getAllProviderFromDB = async (query: Record<string, unknown>) => {
 };
 
 const getSingleProvider = async (id: string) => {
-    const result = await Provider.findById(id).populate({
-        path: 'user',
-        select: 'isBlocked isActive',
-    });
+    const data = await Provider.aggregate([
+        {
+            $match: {
+                _id: new mongoose.Types.ObjectId(id),
+            },
+        },
+
+        {
+            $lookup: {
+                from: 'users',
+                let: { userId: '$user' },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ['$_id', '$$userId'] },
+                        },
+                    },
+                    {
+                        $project: {
+                            isBlocked: 1,
+                            isActive: 1,
+                        },
+                    },
+                ],
+                as: 'user',
+            },
+        },
+
+        {
+            $unwind: {
+                path: '$user',
+                preserveNullAndEmptyArrays: true,
+            },
+        },
+
+        {
+            $lookup: {
+                from: 'tasks',
+                let: { providerId: '$_id' },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ['$provider', '$$providerId'] },
+                                    {
+                                        $eq: [
+                                            '$status',
+                                            ENUM_TASK_STATUS.COMPLETED,
+                                        ],
+                                    },
+                                ],
+                            },
+                        },
+                    },
+                ],
+                as: 'completedTasks',
+            },
+        },
+
+        {
+            $lookup: {
+                from: 'ratings',
+                let: { providerId: '$_id' },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ['$provider', '$$providerId'] },
+                        },
+                    },
+                ],
+                as: 'ratings',
+            },
+        },
+
+        {
+            $addFields: {
+                totalJobComplete: { $size: '$completedTasks' },
+                totalRatingCount: { $size: '$ratings' },
+
+                avgRating: {
+                    $cond: [
+                        { $gt: [{ $size: '$ratings' }, 0] },
+                        { $avg: '$ratings.rating' },
+                        0,
+                    ],
+                },
+            },
+        },
+
+        {
+            $project: {
+                completedTasks: 0,
+                ratings: 0,
+            },
+        },
+    ]);
+    const result = data[0];
     return result;
 };
 

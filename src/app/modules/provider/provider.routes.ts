@@ -23,7 +23,12 @@ router.get(
 );
 router.get(
     '/get-single/:id',
-    auth(USER_ROLE.admin, USER_ROLE.superAdmin),
+    auth(
+        USER_ROLE.admin,
+        USER_ROLE.superAdmin,
+        USER_ROLE.customer,
+        USER_ROLE.provider
+    ),
     ProviderController.getSingleProvider
 );
 router.get(

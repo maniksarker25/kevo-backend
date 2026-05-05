@@ -5,6 +5,7 @@ import { bidRoutes } from '../modules/bid/bid.routes';
 import { conversationRoutes } from '../modules/conversation/conversation.routes';
 import { CustomerRoutes } from '../modules/customer/customer.routes';
 import { fileUploadRoutes } from '../modules/file-upload/file-upload.routes';
+import { legalInfoRoutes } from '../modules/legal_info/legal_info.routes';
 import { ManageRoutes } from '../modules/manage-web/manage.routes';
 import { messageRoutes } from '../modules/message/message.routes';
 import { metaRoutes } from '../modules/meta/meta.routes';
@@ -102,6 +103,10 @@ const moduleRoutes = [
     {
         path: '/support',
         router: supportRoutes,
+    },
+    {
+        path: '/legal-info',
+        router: legalInfoRoutes,
     },
 ];
 

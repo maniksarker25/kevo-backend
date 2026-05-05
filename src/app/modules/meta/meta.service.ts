@@ -2,27 +2,19 @@
 import { Customer } from '../customer/customer.model';
 import Payment from '../payment/payment.model';
 import { Provider } from '../provider/provider.model';
-import { ENUM_TASK_STATUS } from '../task/task.enum';
-import TaskModel from '../task/task.model';
+import Report from '../report/report.model';
 
 const getDashboardMetaData = async () => {
-    const [totalCustomer, totalProvider, activeTask] = await Promise.all([
+    const [totalCustomer, totalProvider, pendingReports] = await Promise.all([
         Customer.countDocuments(),
         Provider.countDocuments(),
-        TaskModel.countDocuments({
-            status: {
-                $in: [
-                    ENUM_TASK_STATUS.OPEN_FOR_BID,
-                    ENUM_TASK_STATUS.IN_PROGRESS,
-                ],
-            },
-        }),
+        Report.countDocuments({ isResolved: false }),
     ]);
 
     return {
         totalCustomer,
         totalProvider,
-        activeTask,
+        pendingReports,
     };
 };
 
@@ -269,11 +261,117 @@ const getEarningChartData = async (year: number) => {
         yearsDropdown,
     };
 };
+
+const getActivities = async (query: Record<string, unknown>) => {
+    try {
+        const { frame } = query; // e.g., 'Last 24 Hours', 'Last Week', etc.
+        const now = new Date();
+
+        let currentStart: Date | null = null;
+        let previousStart: Date | null = null;
+        let previousEnd: Date | null = null;
+
+        // Calculate current and previous periods
+        switch (frame) {
+            case 'Last 24 Hours':
+                currentStart = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+                previousStart = new Date(now.getTime() - 48 * 60 * 60 * 1000);
+                previousEnd = currentStart;
+                break;
+            case 'Last Week':
+                currentStart = new Date(
+                    now.getTime() - 7 * 24 * 60 * 60 * 1000
+                );
+                previousStart = new Date(
+                    now.getTime() - 14 * 24 * 60 * 60 * 1000
+                );
+                previousEnd = currentStart;
+                break;
+            case 'Last Fortnight':
+                currentStart = new Date(
+                    now.getTime() - 14 * 24 * 60 * 60 * 1000
+                );
+                previousStart = new Date(
+                    now.getTime() - 28 * 24 * 60 * 60 * 1000
+                );
+                previousEnd = currentStart;
+                break;
+            case 'Last Month':
+                currentStart = new Date();
+                currentStart.setMonth(now.getMonth() - 1);
+                previousStart = new Date();
+                previousStart.setMonth(now.getMonth() - 2);
+                previousEnd = currentStart;
+                break;
+            case 'Last Year':
+                currentStart = new Date();
+                currentStart.setFullYear(now.getFullYear() - 1);
+                previousStart = new Date();
+                previousStart.setFullYear(now.getFullYear() - 2);
+                previousEnd = currentStart;
+                break;
+            default:
+                currentStart = null; // All time
+                previousStart = null;
+                previousEnd = null;
+        }
+
+        // Helper function to calculate % difference
+        const calcPercentage = (current: number, previous: number) => {
+            if (previous === 0) return current === 0 ? 0 : 100;
+            return ((current - previous) / previous) * 100;
+        };
+
+        // Build filters
+        const currentFilter: any = currentStart
+            ? { createdAt: { $gte: currentStart } }
+            : {};
+        const previousFilter: any =
+            previousStart && previousEnd
+                ? { createdAt: { $gte: previousStart, $lt: previousEnd } }
+                : {};
+
+        // Run counts in parallel
+        const [
+            currentCustomers,
+            prevCustomers,
+            currentProviders,
+            prevProviders,
+            currentReports,
+            prevReports,
+        ] = await Promise.all([
+            Customer.countDocuments(currentFilter),
+            previousStart ? Customer.countDocuments(previousFilter) : 0,
+            Provider.countDocuments(currentFilter),
+            previousStart ? Provider.countDocuments(previousFilter) : 0,
+            Report.countDocuments(currentFilter),
+            previousStart ? Report.countDocuments(previousFilter) : 0,
+        ]);
+
+        return {
+            customers: {
+                count: currentCustomers,
+                changePercent: calcPercentage(currentCustomers, prevCustomers),
+            },
+            providers: {
+                count: currentProviders,
+                changePercent: calcPercentage(currentProviders, prevProviders),
+            },
+            report: {
+                count: currentReports,
+                changePercent: calcPercentage(currentReports, prevReports),
+            },
+        };
+    } catch (err) {
+        console.error(err);
+    }
+};
 const MetaService = {
     getDashboardMetaData,
     getCustomerChartData,
     getProviderChartData,
     getEarningChartData,
+    getActivities,
 };
 
 export default MetaService;
