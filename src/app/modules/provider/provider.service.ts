@@ -76,7 +76,7 @@ const getAllProviderFromDB = async (query: Record<string, unknown>) => {
                 localField: 'user',
                 foreignField: '_id',
                 as: 'user',
-                pipeline: [{ $project: { isBlocked: 1, isAdminVerified: 1 } }],
+                pipeline: [{ $project: { isBlocked: 1, isActive: 1 } }],
             },
         },
         {
@@ -147,7 +147,7 @@ const getAllProviderFromDB = async (query: Record<string, unknown>) => {
 const getSingleProvider = async (id: string) => {
     const result = await Provider.findById(id).populate({
         path: 'user',
-        select: 'isBlocked isAdminVerified',
+        select: 'isBlocked isActive',
     });
     return result;
 };

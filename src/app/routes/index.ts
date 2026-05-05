@@ -14,6 +14,7 @@ import { providerRoutes } from '../modules/provider/provider.routes';
 import { ratingRoutes } from '../modules/rating/rating.routes';
 import { referralRoutes } from '../modules/referral/referral.routes';
 import { superAdminRoutes } from '../modules/superAdmin/superAdmin.routes';
+import { supportRoutes } from '../modules/support/support.routes';
 import { taskRoutes } from '../modules/task/task.routes';
 import { transactionRoutes } from '../modules/transaction/transaction.routes';
 import { userRoutes } from '../modules/user/user.routes';
@@ -97,6 +98,10 @@ const moduleRoutes = [
     {
         path: '/rating',
         router: ratingRoutes,
+    },
+    {
+        path: '/support',
+        router: supportRoutes,
     },
 ];
 
